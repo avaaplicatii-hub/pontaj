@@ -40,6 +40,8 @@
   .santier-btn:hover { border-color: var(--accent); background: rgba(79,142,247,0.08); }
   .santier-btn.sel1 { border-color: var(--accent); background: rgba(79,142,247,0.15); color: var(--accent); font-weight: 600; }
   .santier-btn.sel2 { border-color: var(--accent2); background: rgba(56,224,176,0.12); color: var(--accent2); font-weight: 600; }
+  .santier-btn.selm { border-color: var(--accent); background: rgba(79,142,247,0.15); color: var(--accent); font-weight: 600; }
+  .santier-btn.lead { border-color: var(--warning); background: rgba(247,201,79,0.15); color: var(--warning); font-weight: 600; }
 
   .ore-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .ore-block label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
@@ -79,6 +81,7 @@
   .add-row .btn-add { background: var(--accent); border: none; border-radius: 10px; color: white; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; padding: 10px 18px; cursor: pointer; white-space: nowrap; }
   .admin-sep { height: 1px; background: var(--border); margin: 20px 0; }
 
+  .hint { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
 
   /* VREME */
   .weather-bar { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); overflow-x: auto; }
@@ -92,7 +95,7 @@
   .weather-day .day-icon { font-size: 18px; }
   .weather-day .day-temp { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text); }
   .weather-day .day-rain { font-size: 10px; color: #4f8ef7; }
-  
+
   /* DIALOG CONFIRMARE */
   .dialog-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .dialog-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-width: 400px; width: 100%; box-shadow: var(--shadow); }
@@ -121,6 +124,22 @@
     </div>
   </div>
 
+  <!-- PIN / COD DE ACCES -->
+  <div id="pinScreen" class="screen">
+    <div class="header">
+      <div class="logo">🔒</div>
+      <h1>Pontaj Lunar</h1>
+      <p style="color:var(--muted);font-size:13px;margin-top:4px">AVA</p>
+      <p>Introdu codul de acces</p>
+    </div>
+    <div class="error-msg" id="pinErr">Cod greșit. Încearcă din nou.</div>
+    <div class="card">
+      <div class="card-label">🔑 Cod de acces</div>
+      <input type="password" id="pinInput" inputmode="numeric" placeholder="••••" onkeydown="if(event.key==='Enter')verifyPin()">
+    </div>
+    <button class="btn-primary" onclick="verifyPin()">Intră →</button>
+  </div>
+
   <!-- FORM -->
   <div id="formScreen" class="screen">
     <div class="header">
@@ -134,24 +153,24 @@
     <div class="weather-bar" id="weatherBar">
       <div style="color:var(--muted);font-size:13px">⏳ Se încarcă vremea...</div>
     </div>
-    
+
     <div class="error-msg" id="errorMsg"></div>
-    
+
     <!-- DIALOG PONTAJ DUBLU -->
     <div class="dialog-overlay" id="dialogOverlay" style="display:none">
       <div class="dialog-box">
-        <h3>⚠️ Ai pontat deja!</h3>
-        <p id="dialogMsg">Ai pontat deja în ziua aceasta. Ai greșit, vrei să modifici?</p>
+        <h3>⚠️ Pontaj existent</h3>
+        <p id="dialogMsg"></p>
         <div class="dialog-btns">
-          <button class="btn-da" onclick="confirmaModificare()">✏️ Da, modifică</button>
+          <button class="btn-da" onclick="confirmaModificare()">✏️ Da, suprascrie</button>
           <button class="btn-nu" onclick="inchideDialog()">Nu, închide</button>
         </div>
       </div>
     </div>
-    
+
     <div class="card">
-      <div class="card-label">👤 Nume muncitor</div>
-      <div class="select-wrap"><select id="nume"></select></div>
+      <div class="card-label">👤 Muncitori <span style="color:var(--muted)">(poți selecta mai mulți · primul = șef de echipă)</span></div>
+      <div class="santiere-grid" id="gridMuncitori"></div>
     </div>
     <div class="card">
       <div class="card-label">📅 Data</div>
@@ -200,10 +219,10 @@
     <div class="header">
       <div class="logo admin">⚙️</div>
       <h1>Administrare</h1>
-      <p>Introdu codul de acces</p>
+      <p>Introdu codul de admin</p>
     </div>
     <div class="card">
-      <div class="card-label">🔐 Cod secret</div>
+      <div class="card-label">🔐 Cod admin</div>
       <input type="password" id="codSecret" placeholder="••••••" onkeydown="if(event.key==='Enter')verifyCode()">
     </div>
     <button class="btn-primary" onclick="verifyCode()">Intră în admin →</button>
@@ -217,7 +236,7 @@
     <div class="header">
       <div class="logo admin">⚙️</div>
       <h1>Administrare</h1>
-      <p>Modifică muncitori și șantiere</p>
+      <p>Modifică muncitori, șantiere și codul de acces</p>
     </div>
     <div class="card">
       <div class="section-title">👷 Muncitori</div>
@@ -233,9 +252,13 @@
         <input type="text" id="newSantier" placeholder="Nume șantier" onkeydown="if(event.key==='Enter')addItem('santiere')">
         <button class="btn-add" onclick="addItem('santiere')">+ Adaugă</button>
       </div>
+      <div class="admin-sep"></div>
+      <div class="section-title">🔑 Cod de acces (la deschidere)</div>
+      <input type="text" id="adminPin" placeholder="ex: 1234">
+      <div class="hint">Acest cod îl introduc muncitorii când deschid aplicația. Schimbă-l oricând și apasă „Salvează".</div>
       <div style="margin-top:20px">
         <button class="btn-warning" onclick="saveAdmin()">💾 Salvează modificările</button>
-        <div class="success-inline" id="saveOk">✅ Salvat! Toți muncitorii vor vedea lista actualizată.</div>
+        <div class="success-inline" id="saveOk">✅ Salvat! Modificările sunt active pentru toți.</div>
       </div>
     </div>
     <div style="text-align:center;margin-top:8px">
@@ -269,15 +292,16 @@
 </div>
 <script>
   // ============================================================
-  // PUNE AICI URL-UL NOU DE APPS SCRIPT (cel care se termina in /exec)
-  // generat pe contul NOU de Google. Inlocuieste textul dintre ghilimele.
+  // URL-ul Apps Script (contul nou de Google)
   // ============================================================
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylCwJTEQoOaYQBgn5NXvPrU_A0gGfHbZkfpYTrTeiVOB4xDLEZ4rIft2ovXH7YZseZ/exec";
   const ADMIN_CODE = "2.7182";
 
   let muncitori = [], santiere = [], s1="", s2="";
-  let oreSantiere = {}; // ore per santier luna curenta
-  let dataPontajConflict = null; // pentru modificare
+  let muncitoriSel = [];      // ordinea selectiei; [0] = sef de echipa
+  let oreSantiere = {};
+  let appPin = "1234";        // cod de acces (vine din config)
+  let pendingBatch = null;    // pentru confirmarea suprascrierii
 
   const azi = new Date();
   const ZILE = ["Duminică","Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"];
@@ -288,62 +312,26 @@
   // ===== VREME =====
   async function loadWeather() {
     try {
-      // Hesperange, Luxembourg: lat=49.5731, lon=6.1731
       const url = "https://api.open-meteo.com/v1/forecast?latitude=49.5731&longitude=6.1731&current=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FBerlin&forecast_days=7";
       const r = await fetch(url);
       const d = await r.json();
-      
       const wc = d.current.weather_code;
       const temp = Math.round(d.current.temperature_2m);
       const ploaie = d.current.precipitation_probability;
-      
-      function wcToIcon(code) {
-        if(code===0) return "☀️";
-        if(code<=2) return "⛅";
-        if(code<=3) return "☁️";
-        if(code<=48) return "🌫️";
-        if(code<=57) return "🌧️";
-        if(code<=67) return "🌨️";
-        if(code<=77) return "❄️";
-        if(code<=82) return "🌧️";
-        if(code<=86) return "🌨️";
-        if(code<=99) return "⛈️";
-        return "🌤️";
-      }
-      
-      function wcToDesc(code) {
-        if(code===0) return "Senin";
-        if(code<=2) return "Parțial noros";
-        if(code<=3) return "Noros";
-        if(code<=48) return "Ceață";
-        if(code<=57) return "Burniță";
-        if(code<=67) return "Ploaie";
-        if(code<=77) return "Ninsoare";
-        if(code<=82) return "Averse";
-        if(code<=99) return "Furtună";
-        return "Variabil";
-      }
-      
-      const icon = wcToIcon(wc);
-      const desc = wcToDesc(wc);
-      
-      // Zilele urmatoare
+      function wcToIcon(code){if(code===0)return "☀️";if(code<=2)return "⛅";if(code<=3)return "☁️";if(code<=48)return "🌫️";if(code<=57)return "🌧️";if(code<=67)return "🌨️";if(code<=77)return "❄️";if(code<=82)return "🌧️";if(code<=86)return "🌨️";if(code<=99)return "⛈️";return "🌤️";}
+      function wcToDesc(code){if(code===0)return "Senin";if(code<=2)return "Parțial noros";if(code<=3)return "Noros";if(code<=48)return "Ceață";if(code<=57)return "Burniță";if(code<=67)return "Ploaie";if(code<=77)return "Ninsoare";if(code<=82)return "Averse";if(code<=99)return "Furtună";return "Variabil";}
+      const icon = wcToIcon(wc), desc = wcToDesc(wc);
       const zileShort = ["Du","Lu","Ma","Mi","Jo","Vi","Sâ"];
       let daysHtml = "";
-      for(let i=1; i<7; i++) {
+      for(let i=1; i<7; i++){
         const date = new Date(d.daily.time[i]);
-        const dayName = zileShort[date.getDay()];
-        const dayIcon = wcToIcon(d.daily.weather_code[i]);
-        const maxT = Math.round(d.daily.temperature_2m_max[i]);
-        const rain = d.daily.precipitation_probability_max[i];
         daysHtml += `<div class="weather-day">
-          <div class="day-name">${dayName}</div>
-          <div class="day-icon">${dayIcon}</div>
-          <div class="day-temp">${maxT}°</div>
-          <div class="day-rain">${rain}%</div>
+          <div class="day-name">${zileShort[date.getDay()]}</div>
+          <div class="day-icon">${wcToIcon(d.daily.weather_code[i])}</div>
+          <div class="day-temp">${Math.round(d.daily.temperature_2m_max[i])}°</div>
+          <div class="day-rain">${d.daily.precipitation_probability_max[i]}%</div>
         </div>`;
       }
-      
       document.getElementById("weatherBar").innerHTML = `
         <div class="weather-now">
           <div class="icon">${icon}</div>
@@ -376,33 +364,73 @@
       const data = await r.json();
       muncitori = data.muncitori || [];
       santiere = data.santiere || [];
+      appPin = (data.pin != null && data.pin !== "") ? String(data.pin) : "1234";
     } catch(e) {
       muncitori = ["Bargauan Ion","Soare Aurel","Gotcu Tudor","Marin Iulian"];
       santiere = ["EBI","PWC","ALLOUIS","CSS","BUZZ CITY","LABORATOR","FM GLOBAL","SKY PARK"];
+      appPin = "1234";
     }
     init();
-    go("formScreen");
-    loadOreSantiere();
-    loadWeather();
+    go("pinScreen");
+    setTimeout(()=>{ const el=document.getElementById("pinInput"); if(el) el.focus(); }, 100);
   }
 
   function go(id) {
     document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
-    if(id==="adminPanel") renderAdminTags();
+    if(id==="adminPanel"){ renderAdminTags(); document.getElementById("adminPin").value = appPin; }
+  }
+
+  // ===== PIN =====
+  function verifyPin(){
+    const v = (document.getElementById("pinInput").value || "").trim();
+    if(v === String(appPin)){
+      document.getElementById("pinInput").value = "";
+      document.getElementById("pinErr").style.display = "none";
+      go("formScreen");
+      loadOreSantiere();
+      loadWeather();
+    } else {
+      const e = document.getElementById("pinErr");
+      e.style.display = "block";
+      const i = document.getElementById("pinInput");
+      i.style.borderColor = "var(--danger)";
+      setTimeout(()=>i.style.borderColor="", 1000);
+    }
   }
 
   function init() {
-    const sel = document.getElementById("nume");
-    sel.innerHTML = '<option value="">— Alege numele tău —</option>';
-    muncitori.forEach(m => sel.innerHTML += `<option>${m}</option>`);
     const yyyy = azi.getFullYear();
     const mm = String(azi.getMonth()+1).padStart(2,'0');
     const dd = String(azi.getDate()).padStart(2,'0');
     const inp = document.getElementById("dataZi");
     inp.value = yyyy+"-"+mm+"-"+dd;
     inp.max = yyyy+"-"+mm+"-"+dd;
+    renderMuncitoriGrid();
     renderGrids();
+  }
+
+  // ===== MUNCITORI (selectie multipla) =====
+  function renderMuncitoriGrid(){
+    const g = document.getElementById("gridMuncitori");
+    g.innerHTML = "";
+    muncitori.forEach(m => {
+      const idx = muncitoriSel.indexOf(m);
+      const selected = idx >= 0;
+      const isLead = idx === 0;
+      const b = document.createElement("button");
+      b.className = "santier-btn" + (isLead ? " lead" : (selected ? " selm" : ""));
+      b.innerHTML = `<div>${m}</div>` + (isLead ? `<div style="font-size:10px;color:var(--warning);margin-top:2px">👑 șef echipă</div>` : "");
+      b.onclick = () => toggleMuncitor(m);
+      g.appendChild(b);
+    });
+  }
+
+  function toggleMuncitor(m){
+    const idx = muncitoriSel.indexOf(m);
+    if(idx >= 0) muncitoriSel.splice(idx, 1);
+    else muncitoriSel.push(m);
+    renderMuncitoriGrid();
   }
 
   function renderGrids() {
@@ -449,78 +477,89 @@
     setTimeout(()=>e.style.display="none",5000);
   }
 
-  // ===== TRIMITE CU VERIFICARE DUBLU PONTAJ =====
-  async function trimite(eModificare=false){
-    const nume=document.getElementById("nume").value;
+  // ===== TRIMITE (echipa intreaga) =====
+  async function trimite(){
     const ore1=document.getElementById("ore1").value;
     const ore2=document.getElementById("ore2").value;
     const dataInput=document.getElementById("dataZi").value;
-    
-    if(!nume) return showErr("⚠️ Alege numele tău!");
+
+    if(muncitoriSel.length===0) return showErr("⚠️ Selectează cel puțin un muncitor!");
     if(!dataInput) return showErr("⚠️ Alege data!");
     if(!s1) return showErr("⚠️ Alege cel puțin Șantierul 1!");
     if(!ore1||ore1<=0) return showErr("⚠️ Introdu orele pentru Șantierul 1!");
-    
-    const btn=document.getElementById("btnSubmit");
-    btn.disabled=true;btn.textContent="Se trimite...";
-    
+
     const dataObj=new Date(dataInput);
     const dataF=dataObj.toLocaleDateString("ro-RO",{day:"2-digit",month:"2-digit",year:"numeric"});
     const luna=LUNI[dataObj.getMonth()];
     const total=(parseFloat(ore1)||0)+(parseFloat(ore2)||0);
-    
-    try{
-      // Verifica mai intai daca exista pontaj pentru aceasta zi (prin GET)
-      if(!eModificare) {
-        const checkUrl = SCRIPT_URL + "?action=verifica&nume=" + encodeURIComponent(nume) + "&data=" + encodeURIComponent(dataF);
-        const checkResp = await fetch(checkUrl);
-        const checkResult = await checkResp.json();
-        
-        if(checkResult.exista) {
-          btn.disabled=false;btn.textContent="Trimite pontajul →";
-          const vechi = checkResult.vechiDate;
-          document.getElementById("dialogMsg").innerHTML = 
-            `Ai pontat deja în <strong>${dataF}</strong>:<br>` +
-            `${vechi.santier1}: ${vechi.ore1}h` +
-            (vechi.santier2 && vechi.santier2!=='-' ? ` + ${vechi.santier2}: ${vechi.ore2}h` : '') +
-            ` = <strong>${vechi.total}h</strong><br><br>Ai greșit, vrei să modifici?`;
-          document.getElementById("dialogOverlay").style.display="flex";
-          return;
-        }
-      }
+    const sef=muncitoriSel[0];
 
-      // Trimite pontajul
-      await fetch(SCRIPT_URL, {
-        method:"POST",
-        mode:"no-cors",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          tip:"pontaj", eModificare,
-          timestamp:new Date().toLocaleString("ro-RO"),
-          nume, luna, data:dataF, dataISO:dataInput,
-          santier1:s1, ore1:ore1||"0",
-          santier2:s2||"-", ore2:ore2||"0", total
+    const btn=document.getElementById("btnSubmit");
+    btn.disabled=true; btn.textContent="Se verifică...";
+
+    // verifica daca cineva are deja pontaj in ziua respectiva
+    let conflicts=[];
+    try{
+      const checks = await Promise.all(muncitoriSel.map(n =>
+        fetch(SCRIPT_URL + "?action=verifica&nume=" + encodeURIComponent(n) + "&data=" + encodeURIComponent(dataF))
+          .then(r=>r.json()).then(j=>({n, exista: !!j.exista})).catch(()=>({n, exista:false}))
+      ));
+      conflicts = checks.filter(c=>c.exista).map(c=>c.n);
+    }catch(e){}
+
+    if(conflicts.length){
+      btn.disabled=false; btn.textContent="Trimite pontajul →";
+      pendingBatch = {dataF, luna, total, ore1, ore2, sef, conflicts};
+      document.getElementById("dialogMsg").innerHTML =
+        `Au deja pontaj în <strong>${dataF}</strong>:<br><strong>${conflicts.join(", ")}</strong><br><br>Vrei să le suprascrii pontajul cu cel de acum?`;
+      document.getElementById("dialogOverlay").style.display="flex";
+      return;
+    }
+
+    await doSendBatch(dataF, luna, total, ore1, ore2, sef, []);
+  }
+
+  async function doSendBatch(dataF, luna, total, ore1, ore2, sef, conflicts){
+    const btn=document.getElementById("btnSubmit");
+    btn.disabled=true; btn.textContent="Se trimite...";
+    const dataInput=document.getElementById("dataZi").value;
+    try{
+      await Promise.all(muncitoriSel.map(n =>
+        fetch(SCRIPT_URL, {
+          method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            tip:"pontaj",
+            eModificare: conflicts.indexOf(n) >= 0,
+            timestamp:new Date().toLocaleString("ro-RO"),
+            nume:n, luna, data:dataF, dataISO:dataInput,
+            santier1:s1, ore1:ore1||"0",
+            santier2:s2||"-", ore2:ore2||"0", total,
+            sefEchipa: sef
+          })
         })
-      });
-      
-      // Succes
+      ));
       go("successScreen");
-      document.getElementById("successMsg").innerHTML=`<strong>${nume}</strong><br>${dataF} • ${luna}<br>${s1}${s2?" + "+s2:""} • <strong>${total} ore</strong>`;
+      const lista = muncitoriSel.map((n,i)=> i===0 ? n+" 👑" : n).join(", ");
+      document.getElementById("successMsg").innerHTML =
+        `<strong>${muncitoriSel.length} ${muncitoriSel.length===1?"muncitor":"muncitori"}</strong> pontați<br>${lista}<br>${dataF} • ${luna}<br>${s1}${s2?" + "+s2:""} • <strong>${total} ore</strong>`;
       loadOreSantiere();
-      
     }catch(e){
-      btn.disabled=false;btn.textContent="Trimite pontajul →";
+      btn.disabled=false; btn.textContent="Trimite pontajul →";
       showErr("❌ Eroare la trimitere. Verifică conexiunea!");
     }
   }
 
   function confirmaModificare() {
     document.getElementById("dialogOverlay").style.display="none";
-    trimite(true);
+    if(pendingBatch){
+      const p = pendingBatch; pendingBatch = null;
+      doSendBatch(p.dataF, p.luna, p.total, p.ore1, p.ore2, p.sef, p.conflicts);
+    }
   }
 
   function inchideDialog() {
     document.getElementById("dialogOverlay").style.display="none";
+    pendingBatch = null;
     document.getElementById("btnSubmit").disabled=false;
     document.getElementById("btnSubmit").textContent="Trimite pontajul →";
   }
@@ -530,11 +569,13 @@
     document.getElementById("ore2").value="";
     document.getElementById("totalOre").textContent="0";
     s1="";s2="";
+    muncitoriSel=[];
     document.getElementById("label1").textContent="Șantier 1";
     document.getElementById("label2").textContent="Șantier 2";
     document.getElementById("btnSubmit").disabled=false;
     document.getElementById("btnSubmit").textContent="Trimite pontajul →";
     go("formScreen");
+    renderMuncitoriGrid();
     renderGrids();
   }
 
@@ -578,8 +619,10 @@
   async function saveAdmin(){
     const btn = document.querySelector(".btn-warning");
     btn.disabled=true;btn.textContent="Se salvează...";
+    const noulPin = (document.getElementById("adminPin").value || "").trim() || appPin;
     try{
-      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"config",muncitori,santiere})});
+      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"config",muncitori,santiere,pin:noulPin})});
+      appPin = noulPin; // activ imediat
       const el=document.getElementById("saveOk");
       el.style.display="block";
       setTimeout(()=>el.style.display="none",4000);
@@ -591,8 +634,8 @@
   }
 
   async function veziPontaj() {
-    const nume = document.getElementById("nume").value;
-    if(!nume) return showErr("⚠️ Alege mai întâi numele tău!");
+    const nume = muncitoriSel[0];
+    if(!nume) return showErr("⚠️ Selectează mai întâi un muncitor!");
     go("pontajScreen");
     const lunaText = LUNI[azi.getMonth()];
     document.getElementById("pontajSubtitle").textContent = nume + " • " + lunaText + " " + azi.getFullYear();
