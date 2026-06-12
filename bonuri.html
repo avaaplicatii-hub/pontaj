@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1976d2">
+<title>Dépenses AVA</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#f0f2f5; color:#222; min-height:100vh; }
+.container { max-width:600px; margin:0 auto; padding:12px; }
+.header { background:linear-gradient(135deg,#1976d2,#1565c0); color:white; padding:18px 16px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 14px rgba(25,118,210,0.3); }
+.header h1 { font-size:20px; margin-bottom:4px; }
+.header p { opacity:0.9; font-size:13px; }
+.btn { display:block; width:100%; padding:16px; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; margin-bottom:10px; transition:transform 0.1s; }
+.btn:active { transform:scale(0.98); }
+.btn-success { background:#2e7d32; color:white; }
+.btn-outline { background:white; color:#1976d2; border:2px solid #1976d2; }
+.btn-camera { background:linear-gradient(135deg,#1976d2,#1565c0); color:white; padding:24px; font-size:18px; box-shadow:0 4px 14px rgba(25,118,210,0.3); }
+.card { background:white; border-radius:12px; padding:14px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.card h3 { font-size:15px; margin-bottom:10px; color:#1976d2; display:flex; align-items:center; gap:8px; }
+.field { margin-bottom:10px; }
+.field label { display:block; font-size:12px; color:#666; margin-bottom:4px; font-weight:500; }
+.field input, .field select { width:100%; padding:10px 12px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:15px; background:white; }
+.field input:focus, .field select:focus { outline:none; border-color:#1976d2; }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.line-item { background:#f8f9fa; border-radius:10px; padding:10px; margin-bottom:8px; border-left:3px solid #1976d2; }
+.line-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.line-header strong { color:#1976d2; font-size:13px; }
+.btn-icon { background:transparent; border:none; color:#c62828; font-size:18px; cursor:pointer; padding:4px 8px; }
+.tva-summary { background:#fff3cd; border-radius:8px; padding:10px; font-size:13px; margin-top:8px; }
+.tva-row { display:flex; justify-content:space-between; padding:2px 0; }
+.tva-total { border-top:1px solid #d4a72c; margin-top:6px; padding-top:6px; font-weight:700; }
+.preview-img { width:100%; max-height:200px; object-fit:contain; border-radius:8px; margin-bottom:10px; background:#f0f0f0; }
+.loading { text-align:center; padding:30px 20px; }
+.loading-spinner { width:50px; height:50px; border:4px solid #f3f3f3; border-top:4px solid #1976d2; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 12px; }
+@keyframes spin { 0% {transform:rotate(0deg);} 100% {transform:rotate(360deg);} }
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:12px 20px; border-radius:8px; font-size:14px; z-index:1000; opacity:0; transition:opacity 0.3s; }
+.toast.show { opacity:1; }
+.toast.success { background:#2e7d32; }
+.toast.error { background:#c62828; }
+.history-item { background:white; border-radius:10px; padding:12px; margin-bottom:8px; box-shadow:0 1px 4px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; }
+.history-info { flex:1; }
+.history-info strong { color:#1976d2; font-size:14px; }
+.history-info small { color:#666; display:block; margin-top:2px; }
+.history-amount { font-weight:700; color:#2e7d32; }
+.tab-bar { display:flex; gap:6px; margin-bottom:14px; }
+.tab { flex:1; padding:10px; text-align:center; background:white; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; color:#666; }
+.tab.active { background:#1976d2; color:white; }
+.hidden { display:none; }
+#fileInput { display:none; }
+.add-line-btn { background:#e3f2fd; color:#1976d2; border:1.5px dashed #1976d2; padding:10px; border-radius:8px; width:100%; font-weight:600; cursor:pointer; }
+.status-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+.status-neplatit { background:#ffebee; color:#c62828; }
+.status-platit { background:#e8f5e9; color:#2e7d32; }
+.pin-box { max-width:340px; margin:60px auto 0; }
+.pin-box input { width:100%; padding:14px; border:1.5px solid #e0e0e0; border-radius:10px; font-size:18px; text-align:center; letter-spacing:4px; }
+.link-back { display:inline-block; margin-top:8px; color:#1976d2; font-size:14px; text-decoration:none; }
+.err { color:#c62828; font-size:13px; text-align:center; margin-bottom:8px; display:none; }
+.agent-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.agent-btn { padding:14px; border:1.5px solid #1976d2; border-radius:10px; background:white; color:#1976d2; font-size:15px; font-weight:600; cursor:pointer; }
+.agent-btn:active { transform:scale(0.98); }
+.tag { display:inline-flex; align-items:center; gap:6px; background:#e3f2fd; color:#1976d2; border-radius:8px; padding:6px 10px; margin:0 6px 6px 0; font-size:13px; }
+.tag b { cursor:pointer; color:#c62828; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- CODE PERSONNEL -->
+  <div id="agentPinView" class="hidden">
+    <div class="header">
+      <h1>🔑 Code personnel</h1>
+      <p id="agentPinName">—</p>
+    </div>
+    <div class="pin-box">
+      <div class="err" id="pinErr">Code incorrect.</div>
+      <div class="field"><input type="password" id="pinInput" inputmode="numeric" placeholder="••••" onkeydown="if(event.key==='Enter')verifyAgentPin()"></div>
+      <button class="btn btn-success" onclick="verifyAgentPin()">Entrer →</button>
+      <div style="text-align:center"><a class="link-back" href="#" onclick="changeAgent();return false;">← Changer de nom</a></div>
+    </div>
+  </div>
+
+  <!-- QUI ÊTES-VOUS -->
+  <div id="agentView">
+    <div class="header"><h1>👤 Qui êtes-vous ?</h1><p>Choisissez votre nom</p></div>
+    <div class="card"><div class="agent-grid" id="agentGrid"></div></div>
+    <div style="text-align:center">
+      <a class="link-back" href="index.html">← Retour au menu</a>
+      &nbsp;·&nbsp;
+      <a class="link-back" href="#" onclick="openAdmin();return false;">⚙ Gérer</a>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="adminView" class="hidden">
+    <div class="header"><h1>⚙ Administration</h1><p>Personnes et codes personnels</p></div>
+    <div class="card" id="admLock">
+      <div class="field"><label>Code admin</label><input type="password" id="admCode" placeholder="••••••" onkeydown="if(event.key==='Enter')admUnlock()"></div>
+      <button class="btn btn-success" onclick="admUnlock()">🔓 Déverrouiller</button>
+      <button class="btn btn-outline" onclick="backFromAdmin()">← Retour</button>
+    </div>
+    <div class="card hidden" id="admPanel">
+      <div class="field"><label>Personnes & codes personnels</label>
+        <div id="admRows" style="margin-bottom:8px"></div>
+        <button class="add-line-btn" onclick="admAdd()">+ Ajouter une personne</button>
+      </div>
+      <button class="btn btn-success" onclick="admSave()">💾 Enregistrer</button>
+      <button class="btn btn-outline" onclick="backFromAdmin()">← Retour</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appView" class="hidden">
+    <div class="header">
+      <h1>📷 Dépenses AVA</h1>
+      <p>Photographiez le reçu / la facture → l'IA extrait les données → sauvegarde</p>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab active" id="tabNew" onclick="showTab('new')">➕ Nouveau</div>
+      <div class="tab" id="tabHistory" onclick="showTab('history')">📋 Historique</div>
+    </div>
+
+    <div id="viewNew">
+      <div id="step1">
+        <button class="btn btn-camera" onclick="document.getElementById('fileInput').click()">📷 Photo ou galerie</button>
+        <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleFile(event)">
+        <button class="btn btn-outline" onclick="manualEntry()">✏️ Saisie manuelle (sans photo)</button>
+      </div>
+
+      <div id="step2" class="hidden">
+        <div class="card">
+          <img id="previewImg" class="preview-img" alt="Aperçu">
+          <div class="loading">
+            <div class="loading-spinner"></div>
+            <p><strong>L'IA lit le document...</strong></p>
+            <p style="color:#666; font-size:13px; margin-top:6px;">5 à 15 secondes</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="step3" class="hidden">
+        <img id="previewImgForm" class="preview-img" alt="Aperçu">
+        <div class="card">
+          <h3>📄 Données du document</h3>
+          <div class="field">
+            <label>Type de document</label>
+            <select id="tip"><option value="Reçu">Reçu</option><option value="Facture">Facture</option></select>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Date du document</label><input type="date" id="data"></div>
+            <div class="field"><label>Échéance</label><input type="date" id="scadenta"></div>
+          </div>
+          <div class="field"><label>Fournisseur</label><input type="text" id="furnizor" placeholder="Ex: Hornbach"></div>
+          <div class="row2">
+            <div class="field"><label>N° TVA fournisseur</label><input type="text" id="cui" placeholder="LU12345678"></div>
+            <div class="field"><label>N° document</label><input type="text" id="nrDocument"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Chantier</label><input type="text" id="santier" placeholder="Ex: PWC"></div>
+            <div class="field"><label>Statut paiement</label><select id="status"><option value="Non payé">Non payé</option><option value="Payé">Payé</option></select></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📦 Lignes produit</h3>
+          <div id="liniiContainer"></div>
+          <button class="add-line-btn" onclick="addLine()">+ Ajouter une ligne</button>
+        </div>
+
+        <div class="card">
+          <h3>💰 Totaux TVA</h3>
+          <div id="tvaSummary" class="tva-summary"></div>
+        </div>
+
+        <button class="btn btn-success" onclick="saveDocument()">💾 Enregistrer dans Sheets</button>
+        <button class="btn btn-outline" onclick="resetForm()">↺ Annuler / Nouveau</button>
+      </div>
+    </div>
+
+    <div id="viewHistory" class="hidden">
+      <div id="historyList"></div>
+      <button class="btn btn-outline" onclick="showTab('new')">+ Nouveau document</button>
+    </div>
+
+    <div style="text-align:center;margin-top:6px">
+      <span style="font-size:13px;color:#666">Saisi par : <b id="curAgent" style="color:#1976d2"></b> · <a class="link-back" href="#" onclick="changeAgent();return false;">changer</a></span><br>
+      <a class="link-back" href="index.html">← Retour au menu</a>
+      &nbsp;·&nbsp;
+      <a class="link-back" href="#" onclick="openAdmin();return false;">⚙ Gérer</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxMWTd1af8z8cd6baHoSf3BrCrfvUZt_CTtFBoCId4egZuDX_vRpqmoOQcz4pEtpZXJYw/exec';
+const ADMIN_CODE = '2.7182';
+
+let agents = [];               // noms seulement (pour le choix)
+let currentAgent = '', pendingAgent = '';
+let admAgentsArr = [], adminCode = '';
+let currentImage = null, currentMimeType = null, currentLines = [];
+const HISTORY_KEY = 'depenses_ava_history';
+const AGENT_KEY = 'depenses_ava_agent';
+
+// ---- config (liste des noms) ----
+async function loadConfig(){
+  try{ const r=await fetch(URL_APPS_SCRIPT); const d=await r.json(); agents=d.names||[]; }catch(e){ agents=[]; }
+  init();
+}
+function init(){
+  const saved = sessionStorage.getItem(AGENT_KEY);
+  if(saved){ currentAgent=saved; enterApp(); } else showAgentScreen();
+}
+
+function hideAll(){ ['agentView','agentPinView','adminView','appView'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
+
+function showAgentScreen(){
+  hideAll();
+  document.getElementById('agentView').classList.remove('hidden');
+  const g=document.getElementById('agentGrid'); g.innerHTML='';
+  if(agents.length===0){ g.innerHTML='<div style="grid-column:1/-1;color:#666;font-size:14px;text-align:center">Aucune personne. Ajoutez-en via ⚙ Gérer.</div>'; }
+  agents.forEach(a=>{ const b=document.createElement('button'); b.className='agent-btn'; b.textContent=a; b.onclick=()=>pickAgent(a); g.appendChild(b); });
+}
+function pickAgent(name){
+  pendingAgent=name;
+  hideAll();
+  document.getElementById('agentPinName').textContent=name;
+  document.getElementById('pinErr').style.display='none';
+  document.getElementById('pinInput').value='';
+  document.getElementById('agentPinView').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('pinInput').focus(),100);
+}
+function verifyAgentPin(){
+  const pin=(document.getElementById('pinInput').value||'').trim();
+  const xhr=new XMLHttpRequest(); xhr.open('POST',URL_APPS_SCRIPT,true); xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
+  xhr.onload=function(){ try{ const r=JSON.parse(xhr.responseText); if(r.success&&r.ok){ currentAgent=pendingAgent; sessionStorage.setItem(AGENT_KEY,currentAgent); enterApp(); } else { document.getElementById('pinErr').style.display='block'; } }catch(e){ document.getElementById('pinErr').style.display='block'; } };
+  xhr.onerror=function(){ showToast('Pas de connexion','error'); };
+  xhr.send(JSON.stringify({action:'login', name:pendingAgent, pin:pin}));
+}
+function enterApp(){
+  hideAll();
+  document.getElementById('appView').classList.remove('hidden');
+  document.getElementById('curAgent').textContent=currentAgent;
+}
+function changeAgent(){ sessionStorage.removeItem(AGENT_KEY); currentAgent=''; showAgentScreen(); }
+
+// ---- admin (noms + codes personnels) ----
+function openAdmin(){
+  hideAll();
+  document.getElementById('admCode').value='';
+  document.getElementById('admLock').classList.remove('hidden');
+  document.getElementById('admPanel').classList.add('hidden');
+  document.getElementById('adminView').classList.remove('hidden');
+}
+function admUnlock(){
+  const code=document.getElementById('admCode').value;
+  const xhr=new XMLHttpRequest(); xhr.open('POST',URL_APPS_SCRIPT,true); xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
+  xhr.onload=function(){ try{ const r=JSON.parse(xhr.responseText); if(r.success){ adminCode=code; admAgentsArr=(r.agents||[]).map(a=>({n:a.n||'',p:a.p||''})); renderAdmRows(); document.getElementById('admLock').classList.add('hidden'); document.getElementById('admPanel').classList.remove('hidden'); } else showToast(r.error||'Code admin incorrect','error'); }catch(e){ showToast('Erreur','error'); } };
+  xhr.onerror=function(){ showToast('Pas de connexion','error'); };
+  xhr.send(JSON.stringify({action:'getconfig', admin:code}));
+}
+function renderAdmRows(){
+  document.getElementById('admRows').innerHTML = admAgentsArr.map((a,i)=>`
+    <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+      <input type="text" value="${escapeHtml(a.n)}" placeholder="Nom Prénom" oninput="admUpd(${i},'n',this.value)" style="flex:2;padding:9px;border:1.5px solid #e0e0e0;border-radius:8px">
+      <input type="text" value="${escapeHtml(a.p)}" placeholder="Code" oninput="admUpd(${i},'p',this.value)" style="flex:1;padding:9px;border:1.5px solid #e0e0e0;border-radius:8px">
+      <button class="btn-icon" onclick="admDel(${i})">✕</button>
+    </div>`).join('') || '<div style="color:#666;font-size:13px">Aucune personne</div>';
+}
+function admUpd(i,f,v){ admAgentsArr[i][f]=v; }
+function admAdd(){ admAgentsArr.push({n:'',p:''}); renderAdmRows(); }
+function admDel(i){ admAgentsArr.splice(i,1); renderAdmRows(); }
+function admSave(){
+  const clean=admAgentsArr.filter(a=>(a.n||'').trim()!=='').map(a=>({n:a.n.trim(),p:String(a.p||'').trim()}));
+  const xhr=new XMLHttpRequest(); xhr.open('POST',URL_APPS_SCRIPT,true); xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
+  xhr.onload=function(){ try{ const r=JSON.parse(xhr.responseText); if(r.success){ agents=clean.map(a=>a.n); showToast('✓ Enregistré','success'); backFromAdmin(); } else showToast(r.error||'Erreur','error'); }catch(e){ showToast('Erreur','error'); } };
+  xhr.onerror=function(){ showToast('Pas de connexion','error'); };
+  xhr.send(JSON.stringify({action:'saveconfig', admin:adminCode, agents:clean}));
+}
+function backFromAdmin(){
+  document.getElementById('adminView').classList.add('hidden');
+  if(currentAgent) enterApp(); else showAgentScreen();
+}
+
+function showTab(tab){
+  if(tab==='new'){ document.getElementById('viewNew').classList.remove('hidden'); document.getElementById('viewHistory').classList.add('hidden'); document.getElementById('tabNew').classList.add('active'); document.getElementById('tabHistory').classList.remove('active'); }
+  else { document.getElementById('viewNew').classList.add('hidden'); document.getElementById('viewHistory').classList.remove('hidden'); document.getElementById('tabNew').classList.remove('active'); document.getElementById('tabHistory').classList.add('active'); renderHistory(); }
+}
+
+function handleFile(event){
+  const file=event.target.files[0]; if(!file) return;
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  compressImage(file, function(durl, kb){ currentMimeType='image/jpeg'; currentImage=durl.split(',')[1]; document.getElementById('previewImg').src=durl; document.getElementById('previewImgForm').src=durl; showToast('Photo: '+kb+' KB',''); extractData(); });
+}
+
+function compressImage(file, cb){
+  const reader=new FileReader();
+  reader.onload=function(e){ const img=new Image(); img.onload=function(){ const maxDim=1600; let w=img.width,h=img.height; if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;} else if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;} const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); const durl=c.toDataURL('image/jpeg',0.8); cb(durl, Math.round(durl.length*0.75/1024)); }; img.src=e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function extractData(){
+  const xhr=new XMLHttpRequest(); xhr.open('POST',URL_APPS_SCRIPT,true); xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
+  xhr.onload=function(){ if(xhr.status===200){ try{ const r=JSON.parse(xhr.responseText); if(r.success){ fillForm(r.data); } else { showToast('Erreur IA: '+(r.error||'inconnue'),'error'); resetForm(); } }catch(e){ showToast('Réponse invalide','error'); resetForm(); } } else { showToast('Erreur connexion ('+xhr.status+')','error'); resetForm(); } };
+  xhr.onerror=function(){ showToast('Erreur réseau','error'); resetForm(); };
+  xhr.send(JSON.stringify({action:'extract', imageBase64:currentImage, mimeType:currentMimeType}));
+}
+
+function manualEntry(){
+  currentImage=null; currentMimeType=null; document.getElementById('previewImgForm').style.display='none';
+  fillForm({ tip:'Reçu', data:new Date().toISOString().split('T')[0], furnizor:'', tvaFurnizor:'', nrDocument:'', scadenta:null, linii:[] });
+}
+
+function fillForm(data){
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+  document.getElementById('tip').value=data.tip||'Reçu';
+  document.getElementById('data').value=data.data||'';
+  document.getElementById('scadenta').value=data.scadenta||'';
+  document.getElementById('furnizor').value=data.furnizor||'';
+  document.getElementById('cui').value=data.tvaFurnizor||'';
+  document.getElementById('nrDocument').value=data.nrDocument||'';
+  document.getElementById('santier').value='';
+  document.getElementById('status').value='Non payé';
+  currentLines=data.linii||[];
+  if(currentLines.length===0) currentLines.push({descriere:'',cantitate:1,um:'pcs',pretUnitar:0,tvaProcent:17,totalLinie:0});
+  renderLines();
+}
+
+function renderLines(){
+  const container=document.getElementById('liniiContainer'); container.innerHTML='';
+  currentLines.forEach((line,idx)=>{
+    const div=document.createElement('div'); div.className='line-item';
+    div.innerHTML=`
+      <div class="line-header"><strong>Ligne ${idx+1}</strong><button class="btn-icon" onclick="removeLine(${idx})">✕</button></div>
+      <div class="field"><label>Description</label><input type="text" value="${escapeHtml(line.descriere||'')}" onchange="updateLine(${idx},'descriere',this.value)"></div>
+      <div class="row3">
+        <div class="field"><label>Qté</label><input type="number" step="0.01" value="${line.cantitate||0}" onchange="updateLine(${idx},'cantitate',parseFloat(this.value)||0)"></div>
+        <div class="field"><label>UM</label><input type="text" value="${escapeHtml(line.um||'')}" onchange="updateLine(${idx},'um',this.value)"></div>
+        <div class="field"><label>Prix unit.</label><input type="number" step="0.01" value="${line.pretUnitar||0}" onchange="updateLine(${idx},'pretUnitar',parseFloat(this.value)||0)"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>TVA %</label><select onchange="updateLine(${idx},'tvaProcent',parseFloat(this.value))">${[17,14,8,3,0].map(v=>`<option value="${v}" ${line.tvaProcent==v?'selected':''}>${v}%</option>`).join('')}</select></div>
+        <div class="field"><label>Total ligne</label><input type="number" step="0.01" value="${line.totalLinie||0}" onchange="updateLine(${idx},'totalLinie',parseFloat(this.value)||0)"></div>
+      </div>`;
+    container.appendChild(div);
+  });
+  recalcTVA();
+}
+
+function updateLine(idx,field,value){
+  currentLines[idx][field]=value;
+  if(field==='cantitate'||field==='pretUnitar'){ const l=currentLines[idx]; l.totalLinie=+(l.cantitate*l.pretUnitar).toFixed(2); renderLines(); return; }
+  recalcTVA();
+}
+function addLine(){ currentLines.push({descriere:'',cantitate:1,um:'pcs',pretUnitar:0,tvaProcent:17,totalLinie:0}); renderLines(); }
+function removeLine(idx){ if(currentLines.length===1){ showToast('Au moins une ligne requise','error'); return; } currentLines.splice(idx,1); renderLines(); }
+
+function recalcTVA(){
+  const rates=[17,14,8,3]; const baze={17:0,14:0,8:0,3:0,0:0};
+  currentLines.forEach(l=>{ const rate=l.tvaProcent||0; const total=l.totalLinie||0; const baza=rate>0?+(total/(1+rate/100)).toFixed(2):total; if(baze[rate]!==undefined) baze[rate]+=baza; });
+  let html='';
+  rates.forEach(rate=>{ if(baze[rate]>0){ const tva=+(baze[rate]*rate/100).toFixed(2); html+=`<div class="tva-row"><span>Base ${rate}%</span><span>${baze[rate].toFixed(2)} €</span></div><div class="tva-row"><span>TVA ${rate}%</span><span>${tva.toFixed(2)} €</span></div>`; } });
+  const totalFara=Object.keys(baze).reduce((s,r)=>s+baze[r],0);
+  const totalTVA=rates.reduce((s,r)=>s+baze[r]*r/100,0);
+  const totalCu=totalFara+totalTVA;
+  html+=`<div class="tva-row tva-total"><span>TOTAL HT</span><span>${totalFara.toFixed(2)} €</span></div>`;
+  html+=`<div class="tva-row tva-total"><span>TOTAL TVA</span><span>${totalTVA.toFixed(2)} €</span></div>`;
+  html+=`<div class="tva-row tva-total" style="color:#2e7d32; font-size:15px;"><span>TOTAL TTC</span><span>${totalCu.toFixed(2)} €</span></div>`;
+  document.getElementById('tvaSummary').innerHTML=html;
+}
+
+function saveDocument(){
+  const rates=[17,14,8,3]; const baze={17:0,14:0,8:0,3:0};
+  currentLines.forEach(l=>{ const rate=l.tvaProcent||0; const total=l.totalLinie||0; const baza=rate>0?+(total/(1+rate/100)).toFixed(2):total; if(baze[rate]!==undefined) baze[rate]+=baza; });
+  const doc={ saisiPar:currentAgent, tip:document.getElementById('tip').value, data:document.getElementById('data').value, scadenta:document.getElementById('scadenta').value,
+    furnizor:document.getElementById('furnizor').value, tvaFurnizor:document.getElementById('cui').value, nrDocument:document.getElementById('nrDocument').value,
+    santier:document.getElementById('santier').value, status:document.getElementById('status').value,
+    baza17:+baze[17].toFixed(2), tva17:+(baze[17]*0.17).toFixed(2), baza14:+baze[14].toFixed(2), tva14:+(baze[14]*0.14).toFixed(2),
+    baza8:+baze[8].toFixed(2), tva8:+(baze[8]*0.08).toFixed(2), baza3:+baze[3].toFixed(2), tva3:+(baze[3]*0.03).toFixed(2),
+    totalFaraTVA:+Object.keys(baze).reduce((s,r)=>s+baze[r],0).toFixed(2),
+    totalTVA:+rates.reduce((s,r)=>s+baze[r]*r/100,0).toFixed(2),
+    totalCuTVA:+(Object.keys(baze).reduce((s,r)=>s+baze[r],0)+rates.reduce((s,r)=>s+baze[r]*r/100,0)).toFixed(2) };
+  if(!doc.furnizor){ showToast('Complétez le fournisseur','error'); return; }
+  if(!doc.data){ showToast('Complétez la date','error'); return; }
+  showToast('Enregistrement...','');
+  const xhr=new XMLHttpRequest(); xhr.open('POST',URL_APPS_SCRIPT,true); xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
+  xhr.onload=function(){ if(xhr.status===200){ try{ const r=JSON.parse(xhr.responseText); if(r.success){ showToast('✓ Enregistré: '+r.docId,'success'); addToHistory(doc,r.docId,r.linkPoza); setTimeout(resetForm,1500); } else showToast('Erreur: '+r.error,'error'); }catch(e){ showToast('Réponse invalide','error'); } } else showToast('Erreur enregistrement','error'); };
+  xhr.onerror=function(){ showToast('Pas de connexion','error'); };
+  xhr.send(JSON.stringify({action:'save', document:doc, lines:currentLines, imageBase64:currentImage, mimeType:currentMimeType}));
+}
+
+function addToHistory(doc,docId,linkPoza){
+  const h=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
+  h.unshift({docId, data:doc.data, furnizor:doc.furnizor, total:doc.totalCuTVA, status:doc.status, linkPoza, timestamp:Date.now()});
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0,50)));
+}
+
+function renderHistory(){
+  const h=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); const c=document.getElementById('historyList');
+  if(h.length===0){ c.innerHTML='<div class="card" style="text-align:center; color:#666;">Aucun document enregistré</div>'; return; }
+  c.innerHTML=h.map(x=>`<div class="history-item"><div class="history-info"><strong>${escapeHtml(x.furnizor)}</strong><small>${x.docId} · ${x.data}</small><small><span class="status-badge status-${x.status==='Payé'?'platit':'neplatit'}">${x.status}</span></small></div><div style="text-align:right;"><div class="history-amount">${(+x.total).toFixed(2)} €</div>${x.linkPoza?`<small><a href="${x.linkPoza}" target="_blank" style="color:#1976d2;">Voir la photo</a></small>`:''}</div></div>`).join('');
+}
+
+function resetForm(){
+  currentImage=null; currentMimeType=null; currentLines=[];
+  document.getElementById('fileInput').value='';
+  document.getElementById('step1').classList.remove('hidden');
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('previewImgForm').style.display='';
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function showToast(msg,type){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+(type||''); setTimeout(()=>t.classList.remove('show'),3000); }
+
+loadConfig();
+</script>
+</body>
+</html>
