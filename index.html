@@ -1,114 +1,122 @@
 <!DOCTYPE html>
-<html lang="ro">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pontaj Lunar</title>
+<title>Pointage</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117; --card: #1a1d27; --card2: #22263a;
-    --accent: #4f8ef7; --accent2: #38e0b0;
-    --danger: #f7614f; --warning: #f7c94f;
-    --text: #f0f2ff; --muted: #7a8099; --border: #2e3450;
-    --radius: 16px; --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    --bg:#0f1117; --card:#1a1d27; --card2:#22263a;
+    --accent:#4f8ef7; --accent2:#38e0b0; --bureau:#b07bf7;
+    --danger:#f7614f; --warning:#f7c94f;
+    --text:#f0f2ff; --muted:#7a8099; --border:#2e3450;
+    --radius:16px; --shadow:0 8px 32px rgba(0,0,0,0.4);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px 48px; }
-  .container { width: 100%; max-width: 480px; }
-  .screen { display: none; }
-  .screen.active { display: block; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:24px 16px 48px; }
+  .container { width:100%; max-width:480px; }
+  .screen { display:none; }
+  .screen.active { display:block; }
 
-  .header { text-align: center; padding: 32px 0 28px; }
-  .logo { width: 52px; height: 52px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(79,142,247,0.3); }
-  .logo.admin { background: linear-gradient(135deg, var(--warning), #f5a623); }
-  h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
-  .header p { color: var(--muted); font-size: 14px; margin-top: 6px; }
-  .date-badge { background: var(--card2); border: 1px solid var(--border); border-radius: 50px; padding: 8px 18px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent2); display: inline-block; margin-top: 12px; }
+  .header { text-align:center; padding:32px 0 28px; }
+  .logo { width:52px; height:52px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:14px; display:inline-flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:16px; box-shadow:0 4px 20px rgba(79,142,247,0.3); }
+  .logo.admin { background:linear-gradient(135deg,var(--warning),#f5a623); }
+  .logo.bureau { background:linear-gradient(135deg,var(--bureau),#8e5ad6); }
+  h1 { font-size:26px; font-weight:700; letter-spacing:-0.5px; }
+  .header p { color:var(--muted); font-size:14px; margin-top:6px; }
+  .date-badge { background:var(--card2); border:1px solid var(--border); border-radius:50px; padding:8px 18px; font-family:'DM Mono',monospace; font-size:13px; color:var(--accent2); display:inline-block; margin-top:12px; }
 
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; box-shadow: var(--shadow); }
-  .card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 10px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:12px; box-shadow:var(--shadow); }
+  .card-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:10px; }
 
-  select, input[type="number"], input[type="text"], input[type="password"] { width: 100%; background: var(--card2); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 13px 16px; appearance: none; -webkit-appearance: none; outline: none; transition: border-color 0.2s; }
-  select:focus, input:focus { border-color: var(--accent); }
-  .select-wrap { position: relative; }
-  .select-wrap::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; font-size: 16px; }
-  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type="number"], input[type="text"], input[type="password"], textarea, input[type="date"] { width:100%; background:var(--card2); border:1.5px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:15px; padding:13px 16px; outline:none; transition:border-color 0.2s; }
+  input:focus, textarea:focus { border-color:var(--accent); }
+  textarea { resize:vertical; min-height:90px; line-height:1.5; }
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; }
 
-  .santiere-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .santier-btn { background: var(--card2); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 12px 10px; cursor: pointer; transition: all 0.15s; text-align: center; }
-  .santier-btn:hover { border-color: var(--accent); background: rgba(79,142,247,0.08); }
-  .santier-btn.sel1 { border-color: var(--accent); background: rgba(79,142,247,0.15); color: var(--accent); font-weight: 600; }
-  .santier-btn.sel2 { border-color: var(--accent2); background: rgba(56,224,176,0.12); color: var(--accent2); font-weight: 600; }
-  .santier-btn.selm { border-color: var(--accent); background: rgba(79,142,247,0.15); color: var(--accent); font-weight: 600; }
-  .santier-btn.lead { border-color: var(--warning); background: rgba(247,201,79,0.15); color: var(--warning); font-weight: 600; }
+  .santiere-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .santier-btn { background:var(--card2); border:1.5px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; padding:12px 10px; cursor:pointer; transition:all 0.15s; text-align:center; }
+  .santier-btn:hover { border-color:var(--accent); background:rgba(79,142,247,0.08); }
+  .santier-btn.sel1 { border-color:var(--accent); background:rgba(79,142,247,0.15); color:var(--accent); font-weight:600; }
+  .santier-btn.sel2 { border-color:var(--accent2); background:rgba(56,224,176,0.12); color:var(--accent2); font-weight:600; }
+  .santier-btn.selm { border-color:var(--accent); background:rgba(79,142,247,0.15); color:var(--accent); font-weight:600; }
+  .santier-btn.lead { border-color:var(--warning); background:rgba(247,201,79,0.15); color:var(--warning); font-weight:600; }
+  .santier-btn.selb { border-color:var(--bureau); background:rgba(176,123,247,0.15); color:var(--bureau); font-weight:600; }
 
-  .ore-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .ore-block label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
-  .sn1 { font-size: 11px; color: var(--accent); font-weight: 600; }
-  .sn2 { font-size: 11px; color: var(--accent2); font-weight: 600; }
+  .ore-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ore-block label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:500; }
+  .sn1 { font-size:11px; color:var(--accent); font-weight:600; }
+  .sn2 { font-size:11px; color:var(--accent2); font-weight:600; }
 
-  .total-bar { background: linear-gradient(135deg, rgba(79,142,247,0.15), rgba(56,224,176,0.1)); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .total-bar .lbl { font-size: 13px; color: var(--muted); }
-  .total-bar .val { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: var(--accent2); }
-  .total-bar .unit { font-size: 13px; color: var(--muted); }
+  .total-bar { background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(56,224,176,0.1)); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .total-bar .lbl { font-size:13px; color:var(--muted); }
+  .total-bar .val { font-family:'DM Mono',monospace; font-size:28px; font-weight:500; color:var(--accent2); }
+  .total-bar .unit { font-size:13px; color:var(--muted); }
 
-  .btn-primary { width: 100%; background: linear-gradient(135deg, var(--accent), #6fa3fa); border: none; border-radius: var(--radius); color: white; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; padding: 17px; cursor: pointer; transition: opacity 0.2s, transform 0.1s; box-shadow: 0 4px 20px rgba(79,142,247,0.35); }
-  .btn-primary:hover { opacity: 0.92; }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-warning { width: 100%; background: linear-gradient(135deg, var(--warning), #f5a623); border: none; border-radius: var(--radius); color: #1a1200; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; padding: 15px; cursor: pointer; box-shadow: 0 4px 20px rgba(247,201,79,0.25); }
-  .btn-ghost { background: none; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; padding: 4px 8px; transition: color 0.2s; }
-  .btn-ghost:hover { color: var(--text); }
+  .btn-primary { width:100%; background:linear-gradient(135deg,var(--accent),#6fa3fa); border:none; border-radius:var(--radius); color:white; font-family:'DM Sans',sans-serif; font-size:16px; font-weight:700; padding:17px; cursor:pointer; transition:opacity 0.2s,transform 0.1s; box-shadow:0 4px 20px rgba(79,142,247,0.35); }
+  .btn-primary:hover { opacity:0.92; }
+  .btn-primary:active { transform:scale(0.98); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-bureau { background:linear-gradient(135deg,var(--bureau),#9d63e6); box-shadow:0 4px 20px rgba(176,123,247,0.35); }
+  .btn-warning { width:100%; background:linear-gradient(135deg,var(--warning),#f5a623); border:none; border-radius:var(--radius); color:#1a1200; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; padding:15px; cursor:pointer; box-shadow:0 4px 20px rgba(247,201,79,0.25); }
+  .btn-ghost { background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; padding:4px 8px; transition:color 0.2s; }
+  .btn-ghost:hover { color:var(--text); }
 
-  .error-msg { background: rgba(247,97,79,0.12); border: 1px solid rgba(247,97,79,0.3); border-radius: 10px; color: var(--danger); font-size: 13px; padding: 10px 14px; margin-bottom: 12px; display: none; }
-  .success-inline { background: rgba(56,224,176,0.12); border: 1px solid rgba(56,224,176,0.3); border-radius: 10px; color: var(--accent2); font-size: 13px; padding: 10px 14px; margin-top: 10px; display: none; text-align: center; }
+  .choice-btn { width:100%; border:1.5px solid var(--border); border-radius:var(--radius); padding:26px 20px; margin-bottom:14px; cursor:pointer; background:var(--card); text-align:left; display:flex; align-items:center; gap:16px; transition:all 0.15s; box-shadow:var(--shadow); }
+  .choice-btn:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .choice-btn .c-ico { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+  .choice-btn.chantier .c-ico { background:linear-gradient(135deg,var(--accent),var(--accent2)); }
+  .choice-btn.bureau .c-ico { background:linear-gradient(135deg,var(--bureau),#8e5ad6); }
+  .choice-btn .c-txt h3 { font-size:18px; font-weight:700; color:var(--text); }
+  .choice-btn .c-txt p { font-size:13px; color:var(--muted); margin-top:2px; }
 
-  .admin-trigger { text-align: center; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .error-msg { background:rgba(247,97,79,0.12); border:1px solid rgba(247,97,79,0.3); border-radius:10px; color:var(--danger); font-size:13px; padding:10px 14px; margin-bottom:12px; display:none; }
+  .success-inline { background:rgba(56,224,176,0.12); border:1px solid rgba(56,224,176,0.3); border-radius:10px; color:var(--accent2); font-size:13px; padding:10px 14px; margin-top:10px; display:none; text-align:center; }
 
-  #successScreen { text-align: center; padding: 48px 24px; }
-  .check { width: 72px; height: 72px; background: linear-gradient(135deg, var(--accent2), #2bc99a); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 20px; box-shadow: 0 4px 24px rgba(56,224,176,0.3); }
-  #successScreen h2 { font-size: 22px; margin-bottom: 8px; }
-  #successScreen p { color: var(--muted); font-size: 14px; line-height: 1.6; }
-  .btn-reset { margin-top: 24px; background: var(--card2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 12px 24px; cursor: pointer; }
+  .admin-trigger { text-align:center; margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
 
-  .section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--warning); margin-bottom: 10px; }
-  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 36px; }
-  .tag { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-  .tag .del { color: var(--danger); cursor: pointer; font-size: 18px; line-height: 1; background: none; border: none; padding: 0; }
-  .add-row { display: flex; gap: 8px; }
-  .add-row input { flex: 1; padding: 10px 14px; font-size: 14px; }
-  .add-row .btn-add { background: var(--accent); border: none; border-radius: 10px; color: white; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; padding: 10px 18px; cursor: pointer; white-space: nowrap; }
-  .admin-sep { height: 1px; background: var(--border); margin: 20px 0; }
+  #successScreen { text-align:center; padding:48px 24px; }
+  .check { width:72px; height:72px; background:linear-gradient(135deg,var(--accent2),#2bc99a); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:32px; margin-bottom:20px; box-shadow:0 4px 24px rgba(56,224,176,0.3); }
+  #successScreen h2 { font-size:22px; margin-bottom:8px; }
+  #successScreen p { color:var(--muted); font-size:14px; line-height:1.6; }
+  .btn-reset { margin-top:24px; background:var(--card2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; padding:12px 24px; cursor:pointer; }
 
-  .hint { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .section-title { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--warning); margin-bottom:10px; }
+  .section-title.b { color:var(--bureau); }
+  .tag-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; min-height:36px; }
+  .tag { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:13px; display:flex; align-items:center; gap:8px; }
+  .tag .del { color:var(--danger); cursor:pointer; font-size:18px; line-height:1; background:none; border:none; padding:0; }
+  .add-row { display:flex; gap:8px; }
+  .add-row input { flex:1; padding:10px 14px; font-size:14px; }
+  .add-row .btn-add { background:var(--accent); border:none; border-radius:10px; color:white; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; padding:10px 18px; cursor:pointer; white-space:nowrap; }
+  .admin-sep { height:1px; background:var(--border); margin:20px 0; }
+  .hint { font-size:11px; color:var(--muted); margin-top:6px; line-height:1.4; }
 
-  /* VREME */
-  .weather-bar { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); overflow-x: auto; }
-  .weather-now { display: flex; align-items: center; gap: 10px; min-width: fit-content; padding-right: 16px; border-right: 1px solid var(--border); }
-  .weather-now .temp { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: var(--text); }
-  .weather-now .desc { font-size: 11px; color: var(--muted); }
-  .weather-now .icon { font-size: 28px; }
-  .weather-days { display: flex; gap: 8px; padding-left: 4px; }
-  .weather-day { text-align: center; min-width: 44px; }
-  .weather-day .day-name { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
-  .weather-day .day-icon { font-size: 18px; }
-  .weather-day .day-temp { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text); }
-  .weather-day .day-rain { font-size: 10px; color: #4f8ef7; }
+  .weather-bar { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow); overflow-x:auto; }
+  .weather-now { display:flex; align-items:center; gap:10px; min-width:fit-content; padding-right:16px; border-right:1px solid var(--border); }
+  .weather-now .temp { font-family:'DM Mono',monospace; font-size:24px; font-weight:500; color:var(--text); }
+  .weather-now .desc { font-size:11px; color:var(--muted); }
+  .weather-now .icon { font-size:28px; }
+  .weather-days { display:flex; gap:8px; padding-left:4px; }
+  .weather-day { text-align:center; min-width:44px; }
+  .weather-day .day-name { font-size:10px; color:var(--muted); margin-bottom:4px; }
+  .weather-day .day-icon { font-size:18px; }
+  .weather-day .day-temp { font-size:11px; font-family:'DM Mono',monospace; color:var(--text); }
+  .weather-day .day-rain { font-size:10px; color:#4f8ef7; }
 
-  /* DIALOG CONFIRMARE */
-  .dialog-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .dialog-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-width: 400px; width: 100%; box-shadow: var(--shadow); }
-  .dialog-box h3 { font-size: 18px; margin-bottom: 8px; }
-  .dialog-box p { color: var(--muted); font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
-  .dialog-btns { display: flex; gap: 10px; }
-  .dialog-btns button { flex: 1; padding: 13px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
-  .btn-da { background: var(--accent); color: white; }
-  .btn-nu { background: var(--card2); color: var(--muted); border: 1px solid var(--border) !important; }
+  .dialog-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .dialog-box { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; max-width:400px; width:100%; box-shadow:var(--shadow); }
+  .dialog-box h3 { font-size:18px; margin-bottom:8px; }
+  .dialog-box p { color:var(--muted); font-size:14px; margin-bottom:20px; line-height:1.5; }
+  .dialog-btns { display:flex; gap:10px; }
+  .dialog-btns button { flex:1; padding:13px; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; border:none; }
+  .btn-da { background:var(--accent); color:white; }
+  .btn-nu { background:var(--card2); color:var(--muted); border:1px solid var(--border) !important; }
 
-  .loading-overlay { text-align: center; padding: 48px 24px; }
-  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay { text-align:center; padding:48px 24px; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -116,566 +124,447 @@
 
   <!-- LOADING -->
   <div id="loadingScreen" class="screen active">
-    <div class="loading-overlay">
-      <div style="margin-top:80px">
-        <div class="spinner"></div>
-        <p style="color:var(--muted)">Se încarcă...</p>
+    <div class="loading-overlay"><div style="margin-top:80px"><div class="spinner"></div><p style="color:var(--muted)">Chargement...</p></div></div>
+  </div>
+
+  <!-- DIALOG GENERIC -->
+  <div class="dialog-overlay" id="dialogOverlay" style="display:none">
+    <div class="dialog-box">
+      <h3>⚠️ Pointage existant</h3>
+      <p id="dlgMsg"></p>
+      <div class="dialog-btns">
+        <button class="btn-da" id="dlgYes" onclick="dialogYes()">Oui, écraser</button>
+        <button class="btn-nu" onclick="dialogNo()">Non, fermer</button>
       </div>
     </div>
   </div>
 
-  <!-- PIN / COD DE ACCES -->
-  <div id="pinScreen" class="screen">
+  <!-- CHOIX -->
+  <div id="choiceScreen" class="screen">
     <div class="header">
-      <div class="logo">🔒</div>
-      <h1>Pontaj Lunar</h1>
+      <div class="logo">🏢</div>
+      <h1>Pointage</h1>
       <p style="color:var(--muted);font-size:13px;margin-top:4px">AVA</p>
-      <p>Introdu codul de acces</p>
+      <p>Choisissez votre espace</p>
     </div>
-    <div class="error-msg" id="pinErr">Cod greșit. Încearcă din nou.</div>
-    <div class="card">
-      <div class="card-label">🔑 Cod de acces</div>
-      <input type="password" id="pinInput" inputmode="numeric" placeholder="••••" onkeydown="if(event.key==='Enter')verifyPin()">
-    </div>
-    <button class="btn-primary" onclick="verifyPin()">Intră →</button>
+    <button class="choice-btn chantier" onclick="chooseBranch('chantier')">
+      <div class="c-ico">🏗️</div>
+      <div class="c-txt"><h3>Chantier</h3><p>Heures travaillées sur le chantier</p></div>
+    </button>
+    <button class="choice-btn bureau" onclick="chooseBranch('birou')">
+      <div class="c-ico">📐</div>
+      <div class="c-txt"><h3>Bureau d'études</h3><p>Conception / offres — Cameroun</p></div>
+    </button>
+    <div class="admin-trigger"><button class="btn-ghost" onclick="go('adminLogin')">⚙ Admin</button></div>
   </div>
 
-  <!-- FORM -->
+  <!-- PIN -->
+  <div id="pinScreen" class="screen">
+    <div class="header">
+      <div class="logo" id="pinLogo">🔒</div>
+      <h1 id="pinTitle">Code d'accès</h1>
+      <p id="pinSub">Entrez le code</p>
+    </div>
+    <div class="error-msg" id="pinErr">Code incorrect. Réessayez.</div>
+    <div class="card">
+      <div class="card-label">🔑 Code d'accès</div>
+      <input type="password" id="pinInput" inputmode="numeric" placeholder="••••" onkeydown="if(event.key==='Enter')verifyPin()">
+    </div>
+    <button class="btn-primary" id="pinBtn" onclick="verifyPin()">Entrer →</button>
+    <div style="text-align:center;margin-top:16px"><button class="btn-ghost" onclick="go('choiceScreen')">← Retour</button></div>
+  </div>
+
+  <!-- CHANTIER -->
   <div id="formScreen" class="screen">
     <div class="header">
       <div class="logo">🏗️</div>
-      <h1>Pontaj Lunar</h1>
+      <h1>Chantier</h1>
       <p style="color:var(--muted);font-size:13px;margin-top:4px">AVA</p>
-      <p>Completează orele lucrate pe șantier</p>
+      <p>Complétez les heures travaillées</p>
       <div class="date-badge" id="dateBadge"></div>
     </div>
-    <!-- VREME -->
-    <div class="weather-bar" id="weatherBar">
-      <div style="color:var(--muted);font-size:13px">⏳ Se încarcă vremea...</div>
-    </div>
-
+    <div class="weather-bar" id="weatherBar"><div style="color:var(--muted);font-size:13px">⏳ Chargement météo...</div></div>
     <div class="error-msg" id="errorMsg"></div>
-
-    <!-- DIALOG PONTAJ DUBLU -->
-    <div class="dialog-overlay" id="dialogOverlay" style="display:none">
-      <div class="dialog-box">
-        <h3>⚠️ Pontaj existent</h3>
-        <p id="dialogMsg"></p>
-        <div class="dialog-btns">
-          <button class="btn-da" onclick="confirmaModificare()">✏️ Da, suprascrie</button>
-          <button class="btn-nu" onclick="inchideDialog()">Nu, închide</button>
-        </div>
-      </div>
-    </div>
-
     <div class="card">
-      <div class="card-label">👤 Muncitori <span style="color:var(--muted)">(poți selecta mai mulți · primul = șef de echipă)</span></div>
-      <div class="santiere-grid" id="gridMuncitori"></div>
+      <div class="card-label">👷 Ouvriers <span style="color:var(--muted)">(plusieurs possibles · 1er = chef d'équipe)</span></div>
+      <div class="santiere-grid" id="gridOuvriers"></div>
     </div>
+    <div class="card"><div class="card-label">📅 Date</div><input type="date" id="dataZi"></div>
+    <div class="card"><div class="card-label">🏗️ Chantier 1 <span style="color:var(--danger)">*</span></div><div class="santiere-grid" id="grid1"></div></div>
+    <div class="card"><div class="card-label">🏗️ Chantier 2 <span style="color:var(--muted)">(optionnel)</span></div><div class="santiere-grid" id="grid2"></div></div>
     <div class="card">
-      <div class="card-label">📅 Data</div>
-      <input type="date" id="dataZi" style="width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 16px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-    </div>
-    <div class="card">
-      <div class="card-label">🏗️ Șantier 1 <span style="color:var(--danger)">*</span></div>
-      <div class="santiere-grid" id="grid1"></div>
-    </div>
-    <div class="card">
-      <div class="card-label">🏗️ Șantier 2 <span style="color:var(--muted)">(opțional)</span></div>
-      <div class="santiere-grid" id="grid2"></div>
-    </div>
-    <div class="card">
-      <div class="card-label">⏱️ Ore lucrate</div>
+      <div class="card-label">⏱️ Heures travaillées</div>
       <div class="ore-row">
-        <div class="ore-block">
-          <label>Ore <span class="sn1" id="label1">Șantier 1</span></label>
-          <input type="number" id="ore1" min="0" max="24" placeholder="0" oninput="calcTotal()">
-        </div>
-        <div class="ore-block">
-          <label>Ore <span class="sn2" id="label2">Șantier 2</span></label>
-          <input type="number" id="ore2" min="0" max="24" placeholder="0" oninput="calcTotal()">
-        </div>
+        <div class="ore-block"><label>Heures <span class="sn1" id="label1">Chantier 1</span></label><input type="number" id="ore1" min="0" max="24" placeholder="0" oninput="calcTotal()"></div>
+        <div class="ore-block"><label>Heures <span class="sn2" id="label2">Chantier 2</span></label><input type="number" id="ore2" min="0" max="24" placeholder="0" oninput="calcTotal()"></div>
       </div>
     </div>
-    <div class="total-bar">
-      <div class="lbl">Total ore azi</div>
-      <div style="display:flex;align-items:baseline;gap:6px">
-        <div class="val" id="totalOre">0</div>
-        <div class="unit">ore</div>
-      </div>
-    </div>
-    <button class="btn-primary" id="btnSubmit" onclick="trimite()">Trimite pontajul →</button>
-    <div style="margin-top:10px">
-      <button class="btn-primary" style="background:linear-gradient(135deg,var(--accent2),#2bc99a);box-shadow:0 4px 20px rgba(56,224,176,0.3)" onclick="veziPontaj()">📊 Vezi pontajul tău din luna aceasta</button>
-    </div>
+    <div class="total-bar"><div class="lbl">Total heures aujourd'hui</div><div style="display:flex;align-items:baseline;gap:6px"><div class="val" id="totalOre">0</div><div class="unit">heures</div></div></div>
+    <button class="btn-primary" id="btnSubmit" onclick="trimite()">Envoyer le pointage →</button>
+    <div style="margin-top:10px"><button class="btn-primary" style="background:linear-gradient(135deg,var(--accent2),#2bc99a);box-shadow:0 4px 20px rgba(56,224,176,0.3)" onclick="veziPontaj()">📊 Voir votre pointage du mois</button></div>
+    <div class="admin-trigger"><button class="btn-ghost" onclick="go('choiceScreen')">← Retour à l'accueil</button></div>
+  </div>
 
-    <div class="admin-trigger">
-      <button class="btn-ghost" onclick="go('adminLogin')">⚙ Admin</button>
+  <!-- BUREAU -->
+  <div id="bureauScreen" class="screen">
+    <div class="header">
+      <div class="logo bureau">📐</div>
+      <h1>Bureau d'études</h1>
+      <p style="color:var(--muted);font-size:13px;margin-top:4px">AVA — Cameroun</p>
+      <p>Complétez vos heures de travail</p>
+      <div class="date-badge" id="dateBadgeB"></div>
     </div>
+    <div class="weather-bar" id="weatherBarB"><div style="color:var(--muted);font-size:13px">⏳ Chargement météo...</div></div>
+    <div class="error-msg" id="errorMsgB"></div>
+    <div class="card"><div class="card-label">👤 Employé</div><div class="santiere-grid" id="gridEmployes"></div></div>
+    <div class="card"><div class="card-label">📅 Date</div><input type="date" id="dataZiB"></div>
+    <div class="card"><div class="card-label">📁 Projet <span style="color:var(--danger)">*</span></div><div class="santiere-grid" id="gridProjets"></div></div>
+    <div class="card"><div class="card-label">⏱️ Heures travaillées <span style="color:var(--danger)">*</span></div><input type="number" id="heuresB" min="0" max="24" placeholder="0"></div>
+    <div class="card"><div class="card-label">📝 Description du travail <span style="color:var(--danger)">*</span></div><textarea id="descB" placeholder="Décrivez ce que vous avez fait aujourd'hui..."></textarea></div>
+    <button class="btn-primary btn-bureau" id="btnSubmitB" onclick="trimiteBureau()">Envoyer le pointage →</button>
+    <div style="margin-top:10px"><button class="btn-primary btn-bureau" onclick="veziBureau()">📊 Voir votre pointage du mois</button></div>
+    <div class="admin-trigger"><button class="btn-ghost" onclick="go('choiceScreen')">← Retour à l'accueil</button></div>
   </div>
 
   <!-- ADMIN LOGIN -->
   <div id="adminLogin" class="screen">
-    <div class="header">
-      <div class="logo admin">⚙️</div>
-      <h1>Administrare</h1>
-      <p>Introdu codul de admin</p>
-    </div>
-    <div class="card">
-      <div class="card-label">🔐 Cod admin</div>
-      <input type="password" id="codSecret" placeholder="••••••" onkeydown="if(event.key==='Enter')verifyCode()">
-    </div>
-    <button class="btn-primary" onclick="verifyCode()">Intră în admin →</button>
-    <div style="text-align:center;margin-top:16px">
-      <button class="btn-ghost" onclick="go('formScreen')">← Înapoi</button>
-    </div>
+    <div class="header"><div class="logo admin">⚙️</div><h1>Administration</h1><p>Entrez le code admin</p></div>
+    <div class="card"><div class="card-label">🔐 Code admin</div><input type="password" id="codSecret" placeholder="••••••" onkeydown="if(event.key==='Enter')verifyCode()"></div>
+    <button class="btn-primary" onclick="verifyCode()">Entrer →</button>
+    <div style="text-align:center;margin-top:16px"><button class="btn-ghost" onclick="go('choiceScreen')">← Retour</button></div>
   </div>
 
   <!-- ADMIN PANEL -->
   <div id="adminPanel" class="screen">
-    <div class="header">
-      <div class="logo admin">⚙️</div>
-      <h1>Administrare</h1>
-      <p>Modifică muncitori, șantiere și codul de acces</p>
-    </div>
+    <div class="header"><div class="logo admin">⚙️</div><h1>Administration</h1><p>Ouvriers, chantiers, employés, projets et codes</p></div>
     <div class="card">
-      <div class="section-title">👷 Muncitori</div>
-      <div class="tag-list" id="tagMuncitori"></div>
-      <div class="add-row">
-        <input type="text" id="newMuncitor" placeholder="Nume Prenume" onkeydown="if(event.key==='Enter')addItem('muncitori')">
-        <button class="btn-add" onclick="addItem('muncitori')">+ Adaugă</button>
-      </div>
+      <div class="section-title">👷 Ouvriers (chantier)</div>
+      <div class="tag-list" id="tagOuvriers"></div>
+      <div class="add-row"><input type="text" id="newOuvrier" placeholder="Nom Prénom" onkeydown="if(event.key==='Enter')addItem('ouvriers')"><button class="btn-add" onclick="addItem('ouvriers')">+ Ajouter</button></div>
       <div class="admin-sep"></div>
-      <div class="section-title">🏗️ Șantiere</div>
-      <div class="tag-list" id="tagSantiere"></div>
-      <div class="add-row">
-        <input type="text" id="newSantier" placeholder="Nume șantier" onkeydown="if(event.key==='Enter')addItem('santiere')">
-        <button class="btn-add" onclick="addItem('santiere')">+ Adaugă</button>
-      </div>
+      <div class="section-title">🏗️ Chantiers</div>
+      <div class="tag-list" id="tagChantiers"></div>
+      <div class="add-row"><input type="text" id="newChantier" placeholder="Nom du chantier" onkeydown="if(event.key==='Enter')addItem('chantiers')"><button class="btn-add" onclick="addItem('chantiers')">+ Ajouter</button></div>
       <div class="admin-sep"></div>
-      <div class="section-title">🔑 Cod de acces (la deschidere)</div>
-      <input type="text" id="adminPin" placeholder="ex: 1234">
-      <div class="hint">Acest cod îl introduc muncitorii când deschid aplicația. Schimbă-l oricând și apasă „Salvează".</div>
-      <div style="margin-top:20px">
-        <button class="btn-warning" onclick="saveAdmin()">💾 Salvează modificările</button>
-        <div class="success-inline" id="saveOk">✅ Salvat! Modificările sunt active pentru toți.</div>
-      </div>
+      <div class="section-title b">👤 Employés (bureau)</div>
+      <div class="tag-list" id="tagEmployes"></div>
+      <div class="add-row"><input type="text" id="newEmploye" placeholder="Nom de l'employé" onkeydown="if(event.key==='Enter')addItem('employes')"><button class="btn-add" onclick="addItem('employes')">+ Ajouter</button></div>
+      <div class="admin-sep"></div>
+      <div class="section-title b">📁 Projets (bureau)</div>
+      <div class="tag-list" id="tagProjets"></div>
+      <div class="add-row"><input type="text" id="newProjet" placeholder="Nom du projet" onkeydown="if(event.key==='Enter')addItem('projets')"><button class="btn-add" onclick="addItem('projets')">+ Ajouter</button></div>
+      <div class="admin-sep"></div>
+      <div class="section-title">🔑 Code d'accès — Chantier</div>
+      <input type="text" id="adminPinChantier" placeholder="ex: 1234">
+      <div class="section-title b" style="margin-top:16px">🔑 Code d'accès — Bureau</div>
+      <input type="text" id="adminPinBureau" placeholder="ex: 5678">
+      <div class="hint">Ces codes sont demandés à l'entrée de chaque espace. Modifiez-les quand vous voulez puis « Enregistrer ».</div>
+      <div style="margin-top:20px"><button class="btn-warning" onclick="saveAdmin()">💾 Enregistrer les modifications</button><div class="success-inline" id="saveOk">✅ Enregistré ! Modifications actives pour tous.</div></div>
     </div>
-    <div style="text-align:center;margin-top:8px">
-      <button class="btn-ghost" onclick="go('formScreen')">← Înapoi la pontaj</button>
-    </div>
+    <div style="text-align:center;margin-top:8px"><button class="btn-ghost" onclick="go('choiceScreen')">← Retour à l'accueil</button></div>
   </div>
 
-  <!-- PONTAJ PERSONAL -->
+  <!-- PONTAJ CHANTIER -->
   <div id="pontajScreen" class="screen">
-    <div class="header">
-      <div class="logo">📊</div>
-      <h1>Pontajul tău</h1>
-      <p id="pontajSubtitle">Luna curentă</p>
-    </div>
-    <div id="pontajContent">
-      <div class="loading-overlay"><div class="spinner"></div><p style="color:var(--muted)">Se încarcă...</p></div>
-    </div>
-    <div style="text-align:center;margin-top:16px">
-      <button class="btn-ghost" onclick="go('formScreen')">← Înapoi</button>
-    </div>
+    <div class="header"><div class="logo">📊</div><h1>Votre pointage</h1><p id="pontajSubtitle">Mois en cours</p></div>
+    <div id="pontajContent"><div class="loading-overlay"><div class="spinner"></div><p style="color:var(--muted)">Chargement...</p></div></div>
+    <div style="text-align:center;margin-top:16px"><button class="btn-ghost" onclick="go('formScreen')">← Retour</button></div>
+  </div>
+
+  <!-- PONTAJ BUREAU -->
+  <div id="bureauPontajScreen" class="screen">
+    <div class="header"><div class="logo bureau">📊</div><h1>Votre pointage</h1><p id="bureauPontajSubtitle">Mois en cours</p></div>
+    <div id="bureauPontajContent"><div class="loading-overlay"><div class="spinner"></div><p style="color:var(--muted)">Chargement...</p></div></div>
+    <div style="text-align:center;margin-top:16px"><button class="btn-ghost" onclick="go('bureauScreen')">← Retour</button></div>
   </div>
 
   <!-- SUCCESS -->
   <div id="successScreen" class="screen">
-    <div class="check">✓</div>
-    <h2>Pontaj trimis!</h2>
-    <p id="successMsg"></p>
-    <button class="btn-reset" onclick="resetForm()">Completează altă zi</button>
+    <div class="check">✓</div><h2>Pointage envoyé !</h2><p id="successMsg"></p>
+    <button class="btn-reset" onclick="resetAll()">Compléter un autre jour</button>
   </div>
 
 </div>
 <script>
-  // ============================================================
-  // URL-ul Apps Script (contul nou de Google)
-  // ============================================================
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylCwJTEQoOaYQBgn5NXvPrU_A0gGfHbZkfpYTrTeiVOB4xDLEZ4rIft2ovXH7YZseZ/exec";
   const ADMIN_CODE = "2.7182";
 
-  let muncitori = [], santiere = [], s1="", s2="";
-  let muncitoriSel = [];      // ordinea selectiei; [0] = sef de echipa
-  let oreSantiere = {};
-  let appPin = "1234";        // cod de acces (vine din config)
-  let pendingBatch = null;    // pentru confirmarea suprascrierii
+  const METEO_CHANTIER = { lat:49.5731, lon:6.1731, name:"Hesperange, LU", tz:"Europe/Berlin" };
+  const METEO_BUREAU   = { lat:3.848,   lon:11.502, name:"Yaoundé, CM",    tz:"Africa/Douala" };
+
+  let config = { ouvriers:[], chantiers:[], employes:[], projets:[], pinChantier:"1234", pinBureau:"5678" };
+  let s1="", s2="", ouvriersSel=[];
+  let employeSel="", projetSel="";
+  let oreSantiere={};
+  let pendingBranch="", lastBranch="chantier";
+  let _dlgYes=null;
 
   const azi = new Date();
-  const ZILE = ["Duminică","Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"];
-  const LUNI = ["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+  const JOURS = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+  const MOIS  = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+  const ymNow = azi.getFullYear()+"-"+String(azi.getMonth()+1).padStart(2,'0');
 
-  document.getElementById("dateBadge").textContent = ZILE[azi.getDay()]+", "+azi.getDate()+" "+LUNI[azi.getMonth()]+" "+azi.getFullYear();
+  function fmtBadge(){ return JOURS[azi.getDay()]+", "+azi.getDate()+" "+MOIS[azi.getMonth()]+" "+azi.getFullYear(); }
+  function todayISO(){ return azi.getFullYear()+"-"+String(azi.getMonth()+1).padStart(2,'0')+"-"+String(azi.getDate()).padStart(2,'0'); }
 
-  // ===== VREME =====
-  async function loadWeather() {
-    try {
-      const url = "https://api.open-meteo.com/v1/forecast?latitude=49.5731&longitude=6.1731&current=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FBerlin&forecast_days=7";
-      const r = await fetch(url);
-      const d = await r.json();
-      const wc = d.current.weather_code;
-      const temp = Math.round(d.current.temperature_2m);
-      const ploaie = d.current.precipitation_probability;
-      function wcToIcon(code){if(code===0)return "☀️";if(code<=2)return "⛅";if(code<=3)return "☁️";if(code<=48)return "🌫️";if(code<=57)return "🌧️";if(code<=67)return "🌨️";if(code<=77)return "❄️";if(code<=82)return "🌧️";if(code<=86)return "🌨️";if(code<=99)return "⛈️";return "🌤️";}
-      function wcToDesc(code){if(code===0)return "Senin";if(code<=2)return "Parțial noros";if(code<=3)return "Noros";if(code<=48)return "Ceață";if(code<=57)return "Burniță";if(code<=67)return "Ploaie";if(code<=77)return "Ninsoare";if(code<=82)return "Averse";if(code<=99)return "Furtună";return "Variabil";}
-      const icon = wcToIcon(wc), desc = wcToDesc(wc);
-      const zileShort = ["Du","Lu","Ma","Mi","Jo","Vi","Sâ"];
-      let daysHtml = "";
-      for(let i=1; i<7; i++){
-        const date = new Date(d.daily.time[i]);
-        daysHtml += `<div class="weather-day">
-          <div class="day-name">${zileShort[date.getDay()]}</div>
-          <div class="day-icon">${wcToIcon(d.daily.weather_code[i])}</div>
-          <div class="day-temp">${Math.round(d.daily.temperature_2m_max[i])}°</div>
-          <div class="day-rain">${d.daily.precipitation_probability_max[i]}%</div>
-        </div>`;
-      }
-      document.getElementById("weatherBar").innerHTML = `
-        <div class="weather-now">
-          <div class="icon">${icon}</div>
-          <div>
-            <div class="temp">${temp}°C</div>
-            <div class="desc">${desc} • 💧${ploaie}%</div>
-            <div class="desc" style="font-size:10px;margin-top:2px">📍 Hesperange, LU</div>
-          </div>
-        </div>
-        <div class="weather-days">${daysHtml}</div>`;
-    } catch(e) {
-      document.getElementById("weatherBar").innerHTML = '<div style="color:var(--muted);font-size:13px">⚠️ Vremea nu e disponibilă</div>';
-    }
+  // ===== MÉTÉO =====
+  async function loadWeather(cfg, elId){
+    try{
+      const url="https://api.open-meteo.com/v1/forecast?latitude="+cfg.lat+"&longitude="+cfg.lon+"&current=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone="+encodeURIComponent(cfg.tz)+"&forecast_days=7";
+      const r=await fetch(url); const d=await r.json();
+      const wc=d.current.weather_code, temp=Math.round(d.current.temperature_2m), pluie=d.current.precipitation_probability;
+      function ico(c){if(c===0)return "☀️";if(c<=2)return "⛅";if(c<=3)return "☁️";if(c<=48)return "🌫️";if(c<=57)return "🌧️";if(c<=67)return "🌨️";if(c<=77)return "❄️";if(c<=82)return "🌧️";if(c<=86)return "🌨️";if(c<=99)return "⛈️";return "🌤️";}
+      function des(c){if(c===0)return "Ensoleillé";if(c<=2)return "Peu nuageux";if(c<=3)return "Nuageux";if(c<=48)return "Brouillard";if(c<=57)return "Bruine";if(c<=67)return "Pluie";if(c<=77)return "Neige";if(c<=82)return "Averses";if(c<=99)return "Orage";return "Variable";}
+      const jShort=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+      let days="";
+      for(let i=1;i<7;i++){ const dt=new Date(d.daily.time[i]); days+='<div class="weather-day"><div class="day-name">'+jShort[dt.getDay()]+'</div><div class="day-icon">'+ico(d.daily.weather_code[i])+'</div><div class="day-temp">'+Math.round(d.daily.temperature_2m_max[i])+'°</div><div class="day-rain">'+d.daily.precipitation_probability_max[i]+'%</div></div>'; }
+      document.getElementById(elId).innerHTML='<div class="weather-now"><div class="icon">'+ico(wc)+'</div><div><div class="temp">'+temp+'°C</div><div class="desc">'+des(wc)+' • 💧'+pluie+'%</div><div class="desc" style="font-size:10px;margin-top:2px">📍 '+cfg.name+'</div></div></div><div class="weather-days">'+days+'</div>';
+    }catch(e){ document.getElementById(elId).innerHTML='<div style="color:var(--muted);font-size:13px">⚠️ Météo indisponible</div>'; }
   }
 
-  // ===== ORE PER SANTIER =====
-  async function loadOreSantiere() {
-    try {
-      const luna = LUNI[azi.getMonth()];
-      const r = await fetch(SCRIPT_URL + "?action=oresantiere&luna=" + encodeURIComponent(luna));
-      const data = await r.json();
-      oreSantiere = data.oreSantiere || {};
-      renderGrids();
-    } catch(e) {}
-  }
-
-  async function loadConfig() {
-    try {
-      const r = await fetch(SCRIPT_URL);
-      const data = await r.json();
-      muncitori = data.muncitori || [];
-      santiere = data.santiere || [];
-      appPin = (data.pin != null && data.pin !== "") ? String(data.pin) : "1234";
-    } catch(e) {
-      muncitori = ["Bargauan Ion","Soare Aurel","Gotcu Tudor","Marin Iulian"];
-      santiere = ["EBI","PWC","ALLOUIS","CSS","BUZZ CITY","LABORATOR","FM GLOBAL","SKY PARK"];
-      appPin = "1234";
+  async function loadConfig(){
+    try{
+      const r=await fetch(SCRIPT_URL); const d=await r.json();
+      config.ouvriers=d.ouvriers||[]; config.chantiers=d.chantiers||[];
+      config.employes=d.employes||[]; config.projets=d.projets||[];
+      config.pinChantier=String(d.pinChantier||"1234"); config.pinBureau=String(d.pinBureau||"5678");
+    }catch(e){
+      config.ouvriers=["Bargauan Ion","Soare Aurel","Gotcu Tudor","Marin Iulian"];
+      config.chantiers=["EBI","PWC","ALLOUIS","CSS","BUZZ CITY","LABORATOR","FM GLOBAL","SKY PARK"];
+      config.employes=["Employé 1","Employé 2"]; config.projets=["Projet 1","Projet 2"];
+      config.pinChantier="1234"; config.pinBureau="5678";
     }
     init();
-    go("pinScreen");
-    setTimeout(()=>{ const el=document.getElementById("pinInput"); if(el) el.focus(); }, 100);
+    go("choiceScreen");
   }
 
-  function go(id) {
+  function go(id){
     document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
-    if(id==="adminPanel"){ renderAdminTags(); document.getElementById("adminPin").value = appPin; }
+    if(id==="adminPanel"){ renderAdminTags(); document.getElementById("adminPinChantier").value=config.pinChantier; document.getElementById("adminPinBureau").value=config.pinBureau; }
   }
 
-  // ===== PIN =====
+  function chooseBranch(b){
+    pendingBranch=b;
+    document.getElementById("pinInput").value="";
+    document.getElementById("pinErr").style.display="none";
+    const logo=document.getElementById("pinLogo"), title=document.getElementById("pinTitle"), sub=document.getElementById("pinSub");
+    if(b==="chantier"){ logo.className="logo"; logo.textContent="🏗️"; title.textContent="Chantier"; sub.textContent="Entrez le code d'accès"; }
+    else { logo.className="logo bureau"; logo.textContent="📐"; title.textContent="Bureau d'études"; sub.textContent="Entrez le code d'accès"; }
+    go("pinScreen");
+    setTimeout(()=>{ const el=document.getElementById("pinInput"); if(el) el.focus(); },100);
+  }
+
   function verifyPin(){
-    const v = (document.getElementById("pinInput").value || "").trim();
-    if(v === String(appPin)){
-      document.getElementById("pinInput").value = "";
-      document.getElementById("pinErr").style.display = "none";
-      go("formScreen");
-      loadOreSantiere();
-      loadWeather();
+    const v=(document.getElementById("pinInput").value||"").trim();
+    const ok = pendingBranch==="chantier" ? v===String(config.pinChantier) : v===String(config.pinBureau);
+    if(ok){
+      document.getElementById("pinInput").value="";
+      document.getElementById("pinErr").style.display="none";
+      if(pendingBranch==="chantier"){ lastBranch="chantier"; go("formScreen"); loadOreSantiere(); loadWeather(METEO_CHANTIER,"weatherBar"); }
+      else { lastBranch="birou"; go("bureauScreen"); loadWeather(METEO_BUREAU,"weatherBarB"); }
     } else {
-      const e = document.getElementById("pinErr");
-      e.style.display = "block";
-      const i = document.getElementById("pinInput");
-      i.style.borderColor = "var(--danger)";
-      setTimeout(()=>i.style.borderColor="", 1000);
+      document.getElementById("pinErr").style.display="block";
+      const i=document.getElementById("pinInput"); i.style.borderColor="var(--danger)"; setTimeout(()=>i.style.borderColor="",1000);
     }
   }
 
-  function init() {
-    const yyyy = azi.getFullYear();
-    const mm = String(azi.getMonth()+1).padStart(2,'0');
-    const dd = String(azi.getDate()).padStart(2,'0');
-    const inp = document.getElementById("dataZi");
-    inp.value = yyyy+"-"+mm+"-"+dd;
-    inp.max = yyyy+"-"+mm+"-"+dd;
-    renderMuncitoriGrid();
-    renderGrids();
+  function init(){
+    document.getElementById("dateBadge").textContent=fmtBadge();
+    document.getElementById("dateBadgeB").textContent=fmtBadge();
+    ["dataZi","dataZiB"].forEach(id=>{ const inp=document.getElementById(id); inp.value=todayISO(); inp.max=todayISO(); });
+    renderOuvriers(); renderGrids(); renderEmployes(); renderProjets();
   }
 
-  // ===== MUNCITORI (selectie multipla) =====
-  function renderMuncitoriGrid(){
-    const g = document.getElementById("gridMuncitori");
-    g.innerHTML = "";
-    muncitori.forEach(m => {
-      const idx = muncitoriSel.indexOf(m);
-      const selected = idx >= 0;
-      const isLead = idx === 0;
-      const b = document.createElement("button");
-      b.className = "santier-btn" + (isLead ? " lead" : (selected ? " selm" : ""));
-      b.innerHTML = `<div>${m}</div>` + (isLead ? `<div style="font-size:10px;color:var(--warning);margin-top:2px">👑 șef echipă</div>` : "");
-      b.onclick = () => toggleMuncitor(m);
+  // ===== CHANTIER : ouvriers (multi) =====
+  function renderOuvriers(){
+    const g=document.getElementById("gridOuvriers"); g.innerHTML="";
+    config.ouvriers.forEach(m=>{
+      const idx=ouvriersSel.indexOf(m), sel=idx>=0, lead=idx===0;
+      const b=document.createElement("button");
+      b.className="santier-btn"+(lead?" lead":(sel?" selm":""));
+      b.innerHTML="<div>"+m+"</div>"+(lead?'<div style="font-size:10px;color:var(--warning);margin-top:2px">👑 chef d\'équipe</div>':"");
+      b.onclick=()=>{ const i=ouvriersSel.indexOf(m); if(i>=0)ouvriersSel.splice(i,1); else ouvriersSel.push(m); renderOuvriers(); };
+      g.appendChild(b);
+    });
+  }
+  function renderGrids(){
+    ["grid1","grid2"].forEach((id,idx)=>{
+      const nr=idx+1, cl=nr===1?"sel1":"sel2", g=document.getElementById(id); g.innerHTML="";
+      config.chantiers.forEach(s=>{
+        const b=document.createElement("button");
+        b.className="santier-btn"+(((nr===1&&s1===s)||(nr===2&&s2===s))?" "+cl:"");
+        const ore=oreSantiere[s]||0;
+        b.innerHTML="<div>"+s+"</div>"+(ore>0?'<div style="font-size:10px;color:var(--accent2);margin-top:2px">'+(Math.round(ore*10)/10)+'h '+MOIS[azi.getMonth()]+'</div>':"");
+        b.onclick=()=>pick(nr,s,b); g.appendChild(b);
+      });
+    });
+  }
+  function pick(nr,nome,btn){
+    const cl=nr===1?"sel1":"sel2";
+    if(btn.classList.contains(cl)){ btn.classList.remove(cl); if(nr===1){s1="";document.getElementById("label1").textContent="Chantier 1";} else {s2="";document.getElementById("label2").textContent="Chantier 2";} return; }
+    document.getElementById("grid"+nr).querySelectorAll(".santier-btn").forEach(b=>b.classList.remove(cl));
+    btn.classList.add(cl);
+    if(nr===1){s1=nome;document.getElementById("label1").textContent=nome;} else {s2=nome;document.getElementById("label2").textContent=nome;}
+    calcTotal();
+  }
+  function calcTotal(){ const o1=parseFloat(document.getElementById("ore1").value)||0, o2=parseFloat(document.getElementById("ore2").value)||0; document.getElementById("totalOre").textContent=o1+o2; }
+
+  // ===== BUREAU : employé + projet (single) =====
+  function renderEmployes(){
+    const g=document.getElementById("gridEmployes"); g.innerHTML="";
+    config.employes.forEach(m=>{
+      const b=document.createElement("button");
+      b.className="santier-btn"+(employeSel===m?" selb":"");
+      b.innerHTML="<div>"+m+"</div>";
+      b.onclick=()=>{ employeSel=(employeSel===m?"":m); renderEmployes(); };
+      g.appendChild(b);
+    });
+  }
+  function renderProjets(){
+    const g=document.getElementById("gridProjets"); g.innerHTML="";
+    config.projets.forEach(p=>{
+      const b=document.createElement("button");
+      b.className="santier-btn"+(projetSel===p?" selb":"");
+      b.innerHTML="<div>"+p+"</div>";
+      b.onclick=()=>{ projetSel=(projetSel===p?"":p); renderProjets(); };
       g.appendChild(b);
     });
   }
 
-  function toggleMuncitor(m){
-    const idx = muncitoriSel.indexOf(m);
-    if(idx >= 0) muncitoriSel.splice(idx, 1);
-    else muncitoriSel.push(m);
-    renderMuncitoriGrid();
-  }
+  function showErr(msg,el){ const e=document.getElementById(el); e.textContent=msg; e.style.display="block"; setTimeout(()=>e.style.display="none",5000); }
 
-  function renderGrids() {
-    ["grid1","grid2"].forEach((id,idx) => {
-      const nr=idx+1, cl=nr===1?"sel1":"sel2";
-      const g=document.getElementById(id);
-      g.innerHTML="";
-      santiere.forEach(s => {
-        const b=document.createElement("button");
-        b.className="santier-btn"+(((nr===1&&s1===s)||(nr===2&&s2===s))?" "+cl:"");
-        const ore = oreSantiere[s] || 0;
-        const lunaText = LUNI[azi.getMonth()];
-        b.innerHTML = `<div>${s}</div>${ore>0?`<div style="font-size:10px;color:var(--accent2);margin-top:2px">${Math.round(ore*10)/10}h ${lunaText}</div>`:""}`;
-        b.onclick=()=>pick(nr,s,b);
-        g.appendChild(b);
-      });
-    });
-  }
+  // ===== DIALOG GÉNÉRIQUE =====
+  function showDialog(msg,onYes){ document.getElementById("dlgMsg").innerHTML=msg; _dlgYes=onYes; document.getElementById("dialogOverlay").style.display="flex"; }
+  function dialogYes(){ document.getElementById("dialogOverlay").style.display="none"; const f=_dlgYes; _dlgYes=null; if(f)f(); }
+  function dialogNo(){ document.getElementById("dialogOverlay").style.display="none"; _dlgYes=null;
+    document.getElementById("btnSubmit").disabled=false; document.getElementById("btnSubmit").textContent="Envoyer le pointage →";
+    document.getElementById("btnSubmitB").disabled=false; document.getElementById("btnSubmitB").textContent="Envoyer le pointage →"; }
 
-  function pick(nr,nome,btn) {
-    const cl=nr===1?"sel1":"sel2";
-    if(btn.classList.contains(cl)){
-      btn.classList.remove(cl);
-      if(nr===1){s1="";document.getElementById("label1").textContent="Șantier 1";}
-      else{s2="";document.getElementById("label2").textContent="Șantier 2";}
-      return;
-    }
-    document.getElementById("grid"+nr).querySelectorAll(".santier-btn").forEach(b=>b.classList.remove(cl));
-    btn.classList.add(cl);
-    if(nr===1){s1=nome;document.getElementById("label1").textContent=nome;}
-    else{s2=nome;document.getElementById("label2").textContent=nome;}
-    calcTotal();
-  }
-
-  function calcTotal(){
-    const o1=parseFloat(document.getElementById("ore1").value)||0;
-    const o2=parseFloat(document.getElementById("ore2").value)||0;
-    document.getElementById("totalOre").textContent=o1+o2;
-  }
-
-  function showErr(msg){
-    const e=document.getElementById("errorMsg");
-    e.textContent=msg;e.style.display="block";
-    setTimeout(()=>e.style.display="none",5000);
-  }
-
-  // ===== TRIMITE (echipa intreaga) =====
+  // ===== ENVOI CHANTIER =====
   async function trimite(){
-    const ore1=document.getElementById("ore1").value;
-    const ore2=document.getElementById("ore2").value;
-    const dataInput=document.getElementById("dataZi").value;
-
-    if(muncitoriSel.length===0) return showErr("⚠️ Selectează cel puțin un muncitor!");
-    if(!dataInput) return showErr("⚠️ Alege data!");
-    if(!s1) return showErr("⚠️ Alege cel puțin Șantierul 1!");
-    if(!ore1||ore1<=0) return showErr("⚠️ Introdu orele pentru Șantierul 1!");
-
-    const dataObj=new Date(dataInput);
-    const dataF=dataObj.toLocaleDateString("ro-RO",{day:"2-digit",month:"2-digit",year:"numeric"});
-    const luna=LUNI[dataObj.getMonth()];
-    const total=(parseFloat(ore1)||0)+(parseFloat(ore2)||0);
-    const sef=muncitoriSel[0];
-
-    const btn=document.getElementById("btnSubmit");
-    btn.disabled=true; btn.textContent="Se verifică...";
-
-    // verifica daca cineva are deja pontaj in ziua respectiva
+    const ore1=document.getElementById("ore1").value, ore2=document.getElementById("ore2").value, di=document.getElementById("dataZi").value;
+    if(ouvriersSel.length===0) return showErr("⚠️ Sélectionnez au moins un ouvrier !","errorMsg");
+    if(!di) return showErr("⚠️ Choisissez la date !","errorMsg");
+    if(!s1) return showErr("⚠️ Choisissez au moins le Chantier 1 !","errorMsg");
+    if(!ore1||ore1<=0) return showErr("⚠️ Indiquez les heures du Chantier 1 !","errorMsg");
+    const dObj=new Date(di), dataF=dObj.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"}), luna=MOIS[dObj.getMonth()], total=(parseFloat(ore1)||0)+(parseFloat(ore2)||0), sef=ouvriersSel[0];
+    const btn=document.getElementById("btnSubmit"); btn.disabled=true; btn.textContent="Vérification...";
     let conflicts=[];
     try{
-      const checks = await Promise.all(muncitoriSel.map(n =>
-        fetch(SCRIPT_URL + "?action=verifica&nume=" + encodeURIComponent(n) + "&data=" + encodeURIComponent(dataF))
-          .then(r=>r.json()).then(j=>({n, exista: !!j.exista})).catch(()=>({n, exista:false}))
-      ));
-      conflicts = checks.filter(c=>c.exista).map(c=>c.n);
+      const checks=await Promise.all(ouvriersSel.map(n=>fetch(SCRIPT_URL+"?action=verifica&nume="+encodeURIComponent(n)+"&data="+encodeURIComponent(dataF)).then(r=>r.json()).then(j=>({n,e:!!j.exista})).catch(()=>({n,e:false}))));
+      conflicts=checks.filter(c=>c.e).map(c=>c.n);
     }catch(e){}
-
     if(conflicts.length){
-      btn.disabled=false; btn.textContent="Trimite pontajul →";
-      pendingBatch = {dataF, luna, total, ore1, ore2, sef, conflicts};
-      document.getElementById("dialogMsg").innerHTML =
-        `Au deja pontaj în <strong>${dataF}</strong>:<br><strong>${conflicts.join(", ")}</strong><br><br>Vrei să le suprascrii pontajul cu cel de acum?`;
-      document.getElementById("dialogOverlay").style.display="flex";
+      btn.disabled=false; btn.textContent="Envoyer le pointage →";
+      showDialog("Ont déjà un pointage le <strong>"+dataF+"</strong> :<br><strong>"+conflicts.join(", ")+"</strong><br><br>Voulez-vous écraser leur pointage ?", ()=>doSendBatch(dataF,luna,total,ore1,ore2,sef,conflicts,di));
       return;
     }
-
-    await doSendBatch(dataF, luna, total, ore1, ore2, sef, []);
+    doSendBatch(dataF,luna,total,ore1,ore2,sef,[],di);
+  }
+  async function doSendBatch(dataF,luna,total,ore1,ore2,sef,conflicts,di){
+    const btn=document.getElementById("btnSubmit"); btn.disabled=true; btn.textContent="Envoi...";
+    try{
+      await Promise.all(ouvriersSel.map(n=>fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"pontaj",eModificare:conflicts.indexOf(n)>=0,timestamp:new Date().toLocaleString("fr-FR"),nume:n,luna,data:dataF,dataISO:di,santier1:s1,ore1:ore1||"0",santier2:s2||"-",ore2:ore2||"0",total,sefEchipa:sef})})));
+      const lista=ouvriersSel.map((n,i)=>i===0?n+" 👑":n).join(", ");
+      document.getElementById("successMsg").innerHTML="<strong>"+ouvriersSel.length+(ouvriersSel.length===1?" ouvrier":" ouvriers")+"</strong> pointé(s)<br>"+lista+"<br>"+dataF+" • "+luna+"<br>"+s1+(s2?" + "+s2:"")+" • <strong>"+total+" heures</strong>";
+      go("successScreen"); loadOreSantiere();
+    }catch(e){ btn.disabled=false; btn.textContent="Envoyer le pointage →"; showErr("❌ Erreur d'envoi. Vérifiez la connexion !","errorMsg"); }
   }
 
-  async function doSendBatch(dataF, luna, total, ore1, ore2, sef, conflicts){
-    const btn=document.getElementById("btnSubmit");
-    btn.disabled=true; btn.textContent="Se trimite...";
-    const dataInput=document.getElementById("dataZi").value;
+  // ===== ENVOI BUREAU =====
+  async function trimiteBureau(){
+    const heures=document.getElementById("heuresB").value, desc=document.getElementById("descB").value.trim(), di=document.getElementById("dataZiB").value;
+    if(!employeSel) return showErr("⚠️ Sélectionnez l'employé !","errorMsgB");
+    if(!di) return showErr("⚠️ Choisissez la date !","errorMsgB");
+    if(!projetSel) return showErr("⚠️ Choisissez le projet !","errorMsgB");
+    if(!heures||heures<=0) return showErr("⚠️ Indiquez les heures !","errorMsgB");
+    if(!desc) return showErr("⚠️ Décrivez votre travail !","errorMsgB");
+    const dObj=new Date(di), dataF=dObj.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"}), mois=MOIS[dObj.getMonth()];
+    const btn=document.getElementById("btnSubmitB"); btn.disabled=true; btn.textContent="Vérification...";
+    let exista=false;
+    try{ const r=await fetch(SCRIPT_URL+"?mod=birou&action=verifica&employe="+encodeURIComponent(employeSel)+"&data="+encodeURIComponent(dataF)); const j=await r.json(); exista=!!j.exista; }catch(e){}
+    if(exista){
+      btn.disabled=false; btn.textContent="Envoyer le pointage →";
+      showDialog("<strong>"+employeSel+"</strong> a déjà un pointage le <strong>"+dataF+"</strong>.<br><br>Voulez-vous l'écraser ?", ()=>doSendBureau(dataF,mois,heures,desc,di,true));
+      return;
+    }
+    doSendBureau(dataF,mois,heures,desc,di,false);
+  }
+  async function doSendBureau(dataF,mois,heures,desc,di,eMod){
+    const btn=document.getElementById("btnSubmitB"); btn.disabled=true; btn.textContent="Envoi...";
     try{
-      await Promise.all(muncitoriSel.map(n =>
-        fetch(SCRIPT_URL, {
-          method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({
-            tip:"pontaj",
-            eModificare: conflicts.indexOf(n) >= 0,
-            timestamp:new Date().toLocaleString("ro-RO"),
-            nume:n, luna, data:dataF, dataISO:dataInput,
-            santier1:s1, ore1:ore1||"0",
-            santier2:s2||"-", ore2:ore2||"0", total,
-            sefEchipa: sef
-          })
-        })
-      ));
+      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"pointage_birou",eModificare:eMod,timestamp:new Date().toLocaleString("fr-FR"),employe:employeSel,mois,data:dataF,dataISO:di,projet:projetSel,heures:heures||"0",description:desc})});
+      document.getElementById("successMsg").innerHTML="<strong>"+employeSel+"</strong><br>"+dataF+" • "+mois+"<br>"+projetSel+" • <strong>"+heures+" heures</strong><br><span style=\"color:var(--muted);font-size:13px\">"+desc+"</span>";
       go("successScreen");
-      const lista = muncitoriSel.map((n,i)=> i===0 ? n+" 👑" : n).join(", ");
-      document.getElementById("successMsg").innerHTML =
-        `<strong>${muncitoriSel.length} ${muncitoriSel.length===1?"muncitor":"muncitori"}</strong> pontați<br>${lista}<br>${dataF} • ${luna}<br>${s1}${s2?" + "+s2:""} • <strong>${total} ore</strong>`;
-      loadOreSantiere();
-    }catch(e){
-      btn.disabled=false; btn.textContent="Trimite pontajul →";
-      showErr("❌ Eroare la trimitere. Verifică conexiunea!");
+    }catch(e){ btn.disabled=false; btn.textContent="Envoyer le pointage →"; showErr("❌ Erreur d'envoi. Vérifiez la connexion !","errorMsgB"); }
+  }
+
+  // ===== RESET =====
+  function resetAll(){
+    if(lastBranch==="chantier"){
+      document.getElementById("ore1").value=""; document.getElementById("ore2").value=""; document.getElementById("totalOre").textContent="0";
+      s1="";s2="";ouvriersSel=[]; document.getElementById("label1").textContent="Chantier 1"; document.getElementById("label2").textContent="Chantier 2";
+      document.getElementById("btnSubmit").disabled=false; document.getElementById("btnSubmit").textContent="Envoyer le pointage →";
+      renderOuvriers(); renderGrids(); go("formScreen");
+    } else {
+      document.getElementById("heuresB").value=""; document.getElementById("descB").value=""; employeSel=""; projetSel="";
+      document.getElementById("btnSubmitB").disabled=false; document.getElementById("btnSubmitB").textContent="Envoyer le pointage →";
+      renderEmployes(); renderProjets(); go("bureauScreen");
     }
   }
 
-  function confirmaModificare() {
-    document.getElementById("dialogOverlay").style.display="none";
-    if(pendingBatch){
-      const p = pendingBatch; pendingBatch = null;
-      doSendBatch(p.dataF, p.luna, p.total, p.ore1, p.ore2, p.sef, p.conflicts);
-    }
-  }
-
-  function inchideDialog() {
-    document.getElementById("dialogOverlay").style.display="none";
-    pendingBatch = null;
-    document.getElementById("btnSubmit").disabled=false;
-    document.getElementById("btnSubmit").textContent="Trimite pontajul →";
-  }
-
-  function resetForm(){
-    document.getElementById("ore1").value="";
-    document.getElementById("ore2").value="";
-    document.getElementById("totalOre").textContent="0";
-    s1="";s2="";
-    muncitoriSel=[];
-    document.getElementById("label1").textContent="Șantier 1";
-    document.getElementById("label2").textContent="Șantier 2";
-    document.getElementById("btnSubmit").disabled=false;
-    document.getElementById("btnSubmit").textContent="Trimite pontajul →";
-    go("formScreen");
-    renderMuncitoriGrid();
-    renderGrids();
-  }
-
+  // ===== ADMIN =====
   function verifyCode(){
-    if(document.getElementById("codSecret").value===ADMIN_CODE){
-      document.getElementById("codSecret").value="";
-      go("adminPanel");
-    }else{
-      const i=document.getElementById("codSecret");
-      i.style.borderColor="var(--danger)";
-      setTimeout(()=>i.style.borderColor="",1000);
-    }
+    if(document.getElementById("codSecret").value===ADMIN_CODE){ document.getElementById("codSecret").value=""; go("adminPanel"); }
+    else { const i=document.getElementById("codSecret"); i.style.borderColor="var(--danger)"; setTimeout(()=>i.style.borderColor="",1000); }
   }
-
   function renderAdminTags(){
-    ["tagMuncitori","tagSantiere"].forEach((id,idx)=>{
-      const lista=idx===0?muncitori:santiere;
-      const tip=idx===0?"muncitori":"santiere";
-      document.getElementById(id).innerHTML=lista.map((item,i)=>
-        `<div class="tag">${item}<button class="del" onclick="delItem('${tip}',${i})">×</button></div>`
-      ).join("");
-    });
+    const map={tagOuvriers:["ouvriers",config.ouvriers],tagChantiers:["chantiers",config.chantiers],tagEmployes:["employes",config.employes],tagProjets:["projets",config.projets]};
+    Object.keys(map).forEach(id=>{ const [tip,lista]=map[id]; document.getElementById(id).innerHTML=lista.map((it,i)=>'<div class="tag">'+it+'<button class="del" onclick="delItem(\''+tip+'\','+i+')">×</button></div>').join(""); });
   }
-
-  function delItem(tip,i){
-    if(tip==="muncitori") muncitori.splice(i,1);
-    else santiere.splice(i,1);
-    renderAdminTags();
-  }
-
+  function delItem(tip,i){ config[tip].splice(i,1); renderAdminTags(); }
   function addItem(tip){
-    const id=tip==="muncitori"?"newMuncitor":"newSantier";
-    const val=document.getElementById(id).value.trim();
-    if(!val)return;
-    if(tip==="muncitori") muncitori.push(val);
-    else santiere.push(val);
-    document.getElementById(id).value="";
-    renderAdminTags();
+    const ids={ouvriers:"newOuvrier",chantiers:"newChantier",employes:"newEmploye",projets:"newProjet"};
+    const el=document.getElementById(ids[tip]); const v=el.value.trim(); if(!v)return;
+    config[tip].push(v); el.value=""; renderAdminTags();
   }
-
   async function saveAdmin(){
-    const btn = document.querySelector(".btn-warning");
-    btn.disabled=true;btn.textContent="Se salvează...";
-    const noulPin = (document.getElementById("adminPin").value || "").trim() || appPin;
+    const btn=document.querySelector(".btn-warning"); btn.disabled=true; btn.textContent="Enregistrement...";
+    const pc=(document.getElementById("adminPinChantier").value||"").trim()||config.pinChantier;
+    const pb=(document.getElementById("adminPinBureau").value||"").trim()||config.pinBureau;
     try{
-      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"config",muncitori,santiere,pin:noulPin})});
-      appPin = noulPin; // activ imediat
-      const el=document.getElementById("saveOk");
-      el.style.display="block";
-      setTimeout(()=>el.style.display="none",4000);
+      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"config",ouvriers:config.ouvriers,chantiers:config.chantiers,employes:config.employes,projets:config.projets,pinChantier:pc,pinBureau:pb})});
+      config.pinChantier=pc; config.pinBureau=pb;
+      const el=document.getElementById("saveOk"); el.style.display="block"; setTimeout(()=>el.style.display="none",4000);
       init();
-    }catch(e){
-      alert("Eroare la salvare!");
-    }
-    btn.disabled=false;btn.textContent="💾 Salvează modificările";
+    }catch(e){ alert("Erreur d'enregistrement !"); }
+    btn.disabled=false; btn.textContent="💾 Enregistrer les modifications";
   }
 
-  async function veziPontaj() {
-    const nume = muncitoriSel[0];
-    if(!nume) return showErr("⚠️ Selectează mai întâi un muncitor!");
-    go("pontajScreen");
-    const lunaText = LUNI[azi.getMonth()];
-    document.getElementById("pontajSubtitle").textContent = nume + " • " + lunaText + " " + azi.getFullYear();
-    try {
-      const r = await fetch(SCRIPT_URL + "?action=pontaj&nume=" + encodeURIComponent(nume) + "&luna=" + encodeURIComponent(lunaText));
-      const data = await r.json();
-      if(!data.rows || data.rows.length === 0) {
-        document.getElementById("pontajContent").innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted)">Nu ai completări în ' + lunaText + ' încă.</div>';
-        return;
-      }
-      let totalOre = 0;
-      let rows = data.rows.map(r => {
-        const ore = parseFloat(r.total) || 0;
-        totalOre += ore;
-        return `<tr>
-          <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px">${r.data}</td>
-          <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px">${r.santier1}${r.santier2 && r.santier2 !== '-' ? '<br><span style="color:var(--accent2);font-size:11px">+'+r.santier2+'</span>' : ''}</td>
-          <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;font-family:'DM Mono',monospace;color:var(--accent2)">${ore}h</td>
-        </tr>`;
-      }).join("");
-      document.getElementById("pontajContent").innerHTML = `
-        <div class="card" style="padding:0;overflow:hidden">
-          <table style="width:100%;border-collapse:collapse">
-            <thead><tr style="background:var(--card2)">
-              <th style="padding:12px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Data</th>
-              <th style="padding:12px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Șantier</th>
-              <th style="padding:12px;text-align:right;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Ore</th>
-            </tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-        <div class="total-bar" style="margin-top:8px">
-          <div class="lbl">Total ore ${lunaText}</div>
-          <div style="display:flex;align-items:baseline;gap:6px">
-            <div class="val">${totalOre}</div><div class="unit">ore</div>
-          </div>
-        </div>`;
-    } catch(e) {
-      document.getElementById("pontajContent").innerHTML = '<div style="text-align:center;padding:32px;color:var(--danger)">Eroare la încărcare.</div>';
-    }
+  // ===== ORE / VUES =====
+  async function loadOreSantiere(){
+    try{ const r=await fetch(SCRIPT_URL+"?action=oresantiere&ym="+ymNow); const d=await r.json(); oreSantiere=d.oreSantiere||{}; renderGrids(); }catch(e){}
+  }
+  async function veziPontaj(){
+    const nume=ouvriersSel[0]; if(!nume) return showErr("⚠️ Sélectionnez d'abord un ouvrier !","errorMsg");
+    go("pontajScreen"); document.getElementById("pontajSubtitle").textContent=nume+" • "+MOIS[azi.getMonth()]+" "+azi.getFullYear();
+    try{
+      const r=await fetch(SCRIPT_URL+"?action=pontaj&nume="+encodeURIComponent(nume)+"&ym="+ymNow); const d=await r.json();
+      if(!d.rows||!d.rows.length){ document.getElementById("pontajContent").innerHTML='<div style="text-align:center;padding:32px;color:var(--muted)">Aucune saisie ce mois-ci.</div>'; return; }
+      let tot=0; const rows=d.rows.map(r=>{ const o=parseFloat(r.total)||0; tot+=o; return '<tr><td style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px">'+r.data+'</td><td style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px">'+r.santier1+(r.santier2&&r.santier2!=="-"?'<br><span style="color:var(--accent2);font-size:11px">+'+r.santier2+'</span>':'')+'</td><td style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;font-family:\'DM Mono\',monospace;color:var(--accent2)">'+o+'h</td></tr>'; }).join("");
+      document.getElementById("pontajContent").innerHTML='<div class="card" style="padding:0;overflow:hidden"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--card2)"><th style="padding:12px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Date</th><th style="padding:12px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Chantier</th><th style="padding:12px;text-align:right;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Heures</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="total-bar" style="margin-top:8px"><div class="lbl">Total heures '+MOIS[azi.getMonth()]+'</div><div style="display:flex;align-items:baseline;gap:6px"><div class="val">'+tot+'</div><div class="unit">heures</div></div></div>';
+    }catch(e){ document.getElementById("pontajContent").innerHTML='<div style="text-align:center;padding:32px;color:var(--danger)">Erreur de chargement.</div>'; }
+  }
+  async function veziBureau(){
+    const emp=employeSel; if(!emp) return showErr("⚠️ Sélectionnez d'abord l'employé !","errorMsgB");
+    go("bureauPontajScreen"); document.getElementById("bureauPontajSubtitle").textContent=emp+" • "+MOIS[azi.getMonth()]+" "+azi.getFullYear();
+    try{
+      const r=await fetch(SCRIPT_URL+"?mod=birou&action=pointage&employe="+encodeURIComponent(emp)+"&ym="+ymNow); const d=await r.json();
+      if(!d.rows||!d.rows.length){ document.getElementById("bureauPontajContent").innerHTML='<div style="text-align:center;padding:32px;color:var(--muted)">Aucune saisie ce mois-ci.</div>'; return; }
+      let tot=0; const rows=d.rows.map(r=>{ const o=parseFloat(r.heures)||0; tot+=o; return '<div class="card" style="padding:14px 16px"><div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:13px">'+r.data+' • <span style="color:var(--bureau)">'+r.projet+'</span></div><div style="font-family:\'DM Mono\',monospace;color:var(--bureau)">'+o+'h</div></div><div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.4">'+(r.description||"")+'</div></div>'; }).join("");
+      document.getElementById("bureauPontajContent").innerHTML=rows+'<div class="total-bar" style="margin-top:4px"><div class="lbl">Total heures '+MOIS[azi.getMonth()]+'</div><div style="display:flex;align-items:baseline;gap:6px"><div class="val" style="color:var(--bureau)">'+tot+'</div><div class="unit">heures</div></div></div>';
+    }catch(e){ document.getElementById("bureauPontajContent").innerHTML='<div style="text-align:center;padding:32px;color:var(--danger)">Erreur de chargement.</div>'; }
   }
 
   loadConfig();
