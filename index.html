@@ -68,6 +68,7 @@
   .choice-btn .c-ico { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
   .choice-btn.chantier .c-ico { background:linear-gradient(135deg,var(--accent),var(--accent2)); }
   .choice-btn.bureau .c-ico { background:linear-gradient(135deg,var(--bureau),#8e5ad6); }
+  .choice-btn.recus .c-ico { background:linear-gradient(135deg,#1976d2,#1565c0); }
   .choice-btn .c-txt h3 { font-size:18px; font-weight:700; color:var(--text); }
   .choice-btn .c-txt p { font-size:13px; color:var(--muted); margin-top:2px; }
 
@@ -154,6 +155,10 @@
     <button class="choice-btn bureau" onclick="chooseBranch('birou')">
       <div class="c-ico">📐</div>
       <div class="c-txt"><h3>Bureau d'études</h3><p>Conception / offres — Cameroun</p></div>
+    </button>
+    <button class="choice-btn recus" onclick="window.location.href='bonuri.html'">
+      <div class="c-ico">🧾</div>
+      <div class="c-txt"><h3>Reçus / Factures</h3><p>Photo → l'IA extrait → Sheets</p></div>
     </button>
     <div class="admin-trigger"><button class="btn-ghost" onclick="go('adminLogin')">⚙ Admin</button></div>
   </div>
