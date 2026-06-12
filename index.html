@@ -218,8 +218,16 @@
     <div class="error-msg" id="errorMsgB"></div>
     <div class="card"><div class="card-label">👤 Employé</div><div class="santiere-grid" id="gridEmployes"></div></div>
     <div class="card"><div class="card-label">📅 Date</div><input type="date" id="dataZiB"></div>
-    <div class="card"><div class="card-label">📁 Projet <span style="color:var(--danger)">*</span></div><div class="santiere-grid" id="gridProjets"></div></div>
-    <div class="card"><div class="card-label">⏱️ Heures travaillées <span style="color:var(--danger)">*</span></div><input type="number" id="heuresB" min="0" max="24" placeholder="0"></div>
+    <div class="card"><div class="card-label">📁 Projet 1 <span style="color:var(--danger)">*</span></div><div class="santiere-grid" id="gridProjets1"></div></div>
+    <div class="card"><div class="card-label">📁 Projet 2 <span style="color:var(--muted)">(optionnel)</span></div><div class="santiere-grid" id="gridProjets2"></div></div>
+    <div class="card">
+      <div class="card-label">⏱️ Heures travaillées</div>
+      <div class="ore-row">
+        <div class="ore-block"><label>Heures <span style="font-size:11px;color:var(--bureau);font-weight:600" id="labelP1">Projet 1</span></label><input type="number" id="heures1B" min="0" max="24" placeholder="0" oninput="calcTotalB()"></div>
+        <div class="ore-block"><label>Heures <span style="font-size:11px;color:var(--bureau);font-weight:600" id="labelP2">Projet 2</span></label><input type="number" id="heures2B" min="0" max="24" placeholder="0" oninput="calcTotalB()"></div>
+      </div>
+    </div>
+    <div class="total-bar"><div class="lbl">Total heures aujourd'hui</div><div style="display:flex;align-items:baseline;gap:6px"><div class="val" id="totalB" style="color:var(--bureau)">0</div><div class="unit">heures</div></div></div>
     <div class="card"><div class="card-label">📝 Description du travail <span style="color:var(--danger)">*</span></div><textarea id="descB" placeholder="Décrivez ce que vous avez fait aujourd'hui..."></textarea></div>
     <button class="btn-primary btn-bureau" id="btnSubmitB" onclick="trimiteBureau()">Envoyer le pointage →</button>
     <div style="margin-top:10px"><button class="btn-primary btn-bureau" onclick="veziBureau()">📊 Voir votre pointage du mois</button></div>
@@ -294,7 +302,7 @@
 
   let config = { ouvriers:[], chantiers:[], employes:[], projets:[], pinChantier:"1234", pinBureau:"5678" };
   let s1="", s2="", ouvriersSel=[];
-  let employeSel="", projetSel="";
+  let employeSel="", p1B="", p2B="";
   let oreSantiere={};
   let pendingBranch="", lastBranch="chantier";
   let _dlgYes=null;
@@ -373,7 +381,7 @@
     document.getElementById("dateBadge").textContent=fmtBadge();
     document.getElementById("dateBadgeB").textContent=fmtBadge();
     ["dataZi","dataZiB"].forEach(id=>{ const inp=document.getElementById(id); inp.value=todayISO(); inp.max=todayISO(); });
-    renderOuvriers(); renderGrids(); renderEmployes(); renderProjets();
+    renderOuvriers(); renderGrids(); renderEmployes(); renderProjetsGrids();
   }
 
   // ===== CHANTIER : ouvriers (multi) =====
@@ -421,16 +429,32 @@
       g.appendChild(b);
     });
   }
-  function renderProjets(){
-    const g=document.getElementById("gridProjets"); g.innerHTML="";
-    config.projets.forEach(p=>{
-      const b=document.createElement("button");
-      b.className="santier-btn"+(projetSel===p?" selb":"");
-      b.innerHTML="<div>"+p+"</div>";
-      b.onclick=()=>{ projetSel=(projetSel===p?"":p); renderProjets(); };
-      g.appendChild(b);
+  function renderProjetsGrids(){
+    ["gridProjets1","gridProjets2"].forEach((id,idx)=>{
+      const nr=idx+1, g=document.getElementById(id); g.innerHTML="";
+      config.projets.forEach(p=>{
+        const sel=(nr===1&&p1B===p)||(nr===2&&p2B===p);
+        const b=document.createElement("button");
+        b.className="santier-btn"+(sel?" selb":"");
+        b.innerHTML="<div>"+p+"</div>";
+        b.onclick=()=>pickProjet(nr,p,b);
+        g.appendChild(b);
+      });
     });
   }
+  function pickProjet(nr,nome,btn){
+    if(btn.classList.contains("selb")){
+      btn.classList.remove("selb");
+      if(nr===1){ p1B=""; document.getElementById("labelP1").textContent="Projet 1"; }
+      else { p2B=""; document.getElementById("labelP2").textContent="Projet 2"; }
+      return;
+    }
+    document.getElementById("gridProjets"+nr).querySelectorAll(".santier-btn").forEach(b=>b.classList.remove("selb"));
+    btn.classList.add("selb");
+    if(nr===1){ p1B=nome; document.getElementById("labelP1").textContent=nome; }
+    else { p2B=nome; document.getElementById("labelP2").textContent=nome; }
+  }
+  function calcTotalB(){ const o1=parseFloat(document.getElementById("heures1B").value)||0, o2=parseFloat(document.getElementById("heures2B").value)||0; document.getElementById("totalB").textContent=o1+o2; }
 
   function showErr(msg,el){ const e=document.getElementById(el); e.textContent=msg; e.style.display="block"; setTimeout(()=>e.style.display="none",5000); }
 
@@ -474,28 +498,29 @@
 
   // ===== ENVOI BUREAU =====
   async function trimiteBureau(){
-    const heures=document.getElementById("heuresB").value, desc=document.getElementById("descB").value.trim(), di=document.getElementById("dataZiB").value;
+    const h1=document.getElementById("heures1B").value, h2=document.getElementById("heures2B").value, desc=document.getElementById("descB").value.trim(), di=document.getElementById("dataZiB").value;
     if(!employeSel) return showErr("⚠️ Sélectionnez l'employé !","errorMsgB");
     if(!di) return showErr("⚠️ Choisissez la date !","errorMsgB");
-    if(!projetSel) return showErr("⚠️ Choisissez le projet !","errorMsgB");
-    if(!heures||heures<=0) return showErr("⚠️ Indiquez les heures !","errorMsgB");
+    if(!p1B) return showErr("⚠️ Choisissez au moins le Projet 1 !","errorMsgB");
+    if(!h1||h1<=0) return showErr("⚠️ Indiquez les heures du Projet 1 !","errorMsgB");
     if(!desc) return showErr("⚠️ Décrivez votre travail !","errorMsgB");
     const dObj=new Date(di), dataF=dObj.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"}), mois=MOIS[dObj.getMonth()];
+    const total=(parseFloat(h1)||0)+(parseFloat(h2)||0);
     const btn=document.getElementById("btnSubmitB"); btn.disabled=true; btn.textContent="Vérification...";
     let exista=false;
     try{ const r=await fetch(SCRIPT_URL+"?mod=birou&action=verifica&employe="+encodeURIComponent(employeSel)+"&data="+encodeURIComponent(dataF)); const j=await r.json(); exista=!!j.exista; }catch(e){}
     if(exista){
       btn.disabled=false; btn.textContent="Envoyer le pointage →";
-      showDialog("<strong>"+employeSel+"</strong> a déjà un pointage le <strong>"+dataF+"</strong>.<br><br>Voulez-vous l'écraser ?", ()=>doSendBureau(dataF,mois,heures,desc,di,true));
+      showDialog("<strong>"+employeSel+"</strong> a déjà un pointage le <strong>"+dataF+"</strong>.<br><br>Voulez-vous l'écraser ?", ()=>doSendBureau(dataF,mois,h1,h2,total,desc,di,true));
       return;
     }
-    doSendBureau(dataF,mois,heures,desc,di,false);
+    doSendBureau(dataF,mois,h1,h2,total,desc,di,false);
   }
-  async function doSendBureau(dataF,mois,heures,desc,di,eMod){
+  async function doSendBureau(dataF,mois,h1,h2,total,desc,di,eMod){
     const btn=document.getElementById("btnSubmitB"); btn.disabled=true; btn.textContent="Envoi...";
     try{
-      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"pointage_birou",eModificare:eMod,timestamp:new Date().toLocaleString("fr-FR"),employe:employeSel,mois,data:dataF,dataISO:di,projet:projetSel,heures:heures||"0",description:desc})});
-      document.getElementById("successMsg").innerHTML="<strong>"+employeSel+"</strong><br>"+dataF+" • "+mois+"<br>"+projetSel+" • <strong>"+heures+" heures</strong><br><span style=\"color:var(--muted);font-size:13px\">"+desc+"</span>";
+      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"pointage_birou",eModificare:eMod,timestamp:new Date().toLocaleString("fr-FR"),employe:employeSel,mois,data:dataF,dataISO:di,projet1:p1B,heures1:h1||"0",projet2:p2B||"-",heures2:h2||"0",total,description:desc})});
+      document.getElementById("successMsg").innerHTML="<strong>"+employeSel+"</strong><br>"+dataF+" • "+mois+"<br>"+p1B+(p2B?" + "+p2B:"")+" • <strong>"+total+" heures</strong><br><span style=\"color:var(--muted);font-size:13px\">"+desc+"</span>";
       go("successScreen");
     }catch(e){ btn.disabled=false; btn.textContent="Envoyer le pointage →"; showErr("❌ Erreur d'envoi. Vérifiez la connexion !","errorMsgB"); }
   }
@@ -508,9 +533,10 @@
       document.getElementById("btnSubmit").disabled=false; document.getElementById("btnSubmit").textContent="Envoyer le pointage →";
       renderOuvriers(); renderGrids(); go("formScreen");
     } else {
-      document.getElementById("heuresB").value=""; document.getElementById("descB").value=""; employeSel=""; projetSel="";
+      document.getElementById("heures1B").value=""; document.getElementById("heures2B").value=""; document.getElementById("totalB").textContent="0"; document.getElementById("descB").value=""; employeSel=""; p1B=""; p2B="";
+      document.getElementById("labelP1").textContent="Projet 1"; document.getElementById("labelP2").textContent="Projet 2";
       document.getElementById("btnSubmitB").disabled=false; document.getElementById("btnSubmitB").textContent="Envoyer le pointage →";
-      renderEmployes(); renderProjets(); go("bureauScreen");
+      renderEmployes(); renderProjetsGrids(); go("bureauScreen");
     }
   }
 
@@ -562,7 +588,7 @@
     try{
       const r=await fetch(SCRIPT_URL+"?mod=birou&action=pointage&employe="+encodeURIComponent(emp)+"&ym="+ymNow); const d=await r.json();
       if(!d.rows||!d.rows.length){ document.getElementById("bureauPontajContent").innerHTML='<div style="text-align:center;padding:32px;color:var(--muted)">Aucune saisie ce mois-ci.</div>'; return; }
-      let tot=0; const rows=d.rows.map(r=>{ const o=parseFloat(r.heures)||0; tot+=o; return '<div class="card" style="padding:14px 16px"><div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:13px">'+r.data+' • <span style="color:var(--bureau)">'+r.projet+'</span></div><div style="font-family:\'DM Mono\',monospace;color:var(--bureau)">'+o+'h</div></div><div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.4">'+(r.description||"")+'</div></div>'; }).join("");
+      let tot=0; const rows=d.rows.map(r=>{ const o=parseFloat(r.total)||parseFloat(r.heures1)||0; tot+=o; const proj=r.projet1+(r.projet2&&r.projet2!=="-"?' <span style="color:var(--muted)">+ '+r.projet2+'</span>':''); return '<div class="card" style="padding:14px 16px"><div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:13px">'+r.data+' • <span style="color:var(--bureau)">'+proj+'</span></div><div style="font-family:\'DM Mono\',monospace;color:var(--bureau)">'+o+'h</div></div><div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.4">'+(r.description||"")+'</div></div>'; }).join("");
       document.getElementById("bureauPontajContent").innerHTML=rows+'<div class="total-bar" style="margin-top:4px"><div class="lbl">Total heures '+MOIS[azi.getMonth()]+'</div><div style="display:flex;align-items:baseline;gap:6px"><div class="val" style="color:var(--bureau)">'+tot+'</div><div class="unit">heures</div></div></div>';
     }catch(e){ document.getElementById("bureauPontajContent").innerHTML='<div style="text-align:center;padding:32px;color:var(--danger)">Erreur de chargement.</div>'; }
   }
