@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Dispatch AVA</title>
+<style>
+  :root{
+    --bg:#13171c; --panel:#1b2127; --panel2:#20272f; --line:#2c3640;
+    --ink:#e7edf2; --muted:#8a97a4; --faint:#5c6772;
+    --driver:#f0a830; --work:#36c4b0; --pool:#6b7886; --ok:#5fb878; --danger:#e35d54; --sel:#7aa2ff; --radius:12px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;font-size:16px;overflow:hidden;user-select:none;}
+  .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;}
+  .app{display:flex;flex-direction:column;height:100vh;}
+  header{background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .menu-link{background:var(--panel2);border:1px solid var(--line);color:var(--ink);text-decoration:none;padding:8px 12px;border-radius:9px;font-size:14px;font-weight:600;}
+  header h1{font-size:15px;letter-spacing:.16em;text-transform:uppercase;margin:0;color:var(--muted);font-weight:600;white-space:nowrap;}
+  header h1 .sync{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--faint);margin-right:6px;}
+  header h1 .sync.busy{background:var(--driver);} header h1 .sync.ok{background:var(--ok);}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto;}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 12px;min-width:74px;text-align:center;}
+  .stat b{display:block;font-size:22px;line-height:1;} .stat span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);}
+  .stat.driver b{color:var(--driver);} .stat.work b{color:var(--work);} .stat.ok b{color:var(--ok);} .stat.pool b{color:var(--pool);}
+  nav{display:flex;gap:4px;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--line);overflow-x:auto;}
+  nav button{background:transparent;color:var(--muted);border:1px solid transparent;padding:11px 18px;border-radius:10px;font-size:14px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;font-weight:600;min-height:44px;}
+  nav button.active{background:var(--panel2);color:var(--ink);border-color:var(--line);}
+  #view{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch;}
+  .board{display:grid;grid-template-columns:280px 1fr;gap:16px;height:100%;}
+  @media(max-width:760px){.board{grid-template-columns:1fr;}}
+  .zone{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;min-height:120px;}
+  .zone.neutral{border-style:dashed;border-color:var(--pool);}
+  .zone-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;} .zone-head .name{font-weight:700;} .zone-head .cap{margin-left:auto;font-size:12px;color:var(--faint);} .zone-head .dot{width:9px;height:9px;border-radius:50%;}
+  .zone.drophover{outline:2px solid var(--sel);outline-offset:-2px;background:#222b34;} .zone.full .cap{color:var(--danger);}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;flex:1;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;align-content:start;}
+  .chip{display:inline-flex;align-items:center;gap:8px;touch-action:none;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:9px 13px;min-height:44px;font-size:15px;cursor:grab;max-width:100%;}
+  .chip .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .chip .badge{font-size:13px;opacity:.9;}
+  .chip.driver{border-color:var(--driver);} .chip.selected{outline:2px solid var(--sel);outline-offset:1px;} .chip.dragging{opacity:.35;}
+  .chip-ghost{position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 12px 28px rgba(0,0,0,.5);opacity:.95;}
+  .empty{color:var(--faint);font-style:italic;font-size:13px;padding:6px 2px;}
+  .veh{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;} .veh h3{margin:0 0 4px;font-size:16px;} .veh .seats{font-size:12px;color:var(--faint);}
+  .veh .slot{margin-top:10px;min-height:56px;border:1px dashed var(--line);border-radius:10px;padding:8px;display:flex;align-items:center;gap:8px;} .veh .slot.drophover{outline:2px solid var(--sel);background:#222b34;}
+  table{width:100%;border-collapse:collapse;font-size:15px;} th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);}
+  th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);} td .tag{font-size:12px;padding:2px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);} .tag.none{color:var(--faint);}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px;} .panel h2{margin:0 0 12px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+  input[type=text],input[type=number],input[type=tel]{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:11px 12px;font-size:15px;min-height:44px;} input[type=number]{width:90px;}
+  label.ck{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;min-height:44px;} .btn.primary{background:var(--work);color:#06231f;border-color:transparent;} .btn.warn{background:transparent;color:var(--danger);border-color:var(--danger);}
+  .list-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);} .list-item .x{margin-left:auto;}
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--danger);color:#fff;padding:12px 18px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none;z-index:10000;} #toast.show{opacity:1;}
+  .hint{color:var(--faint);font-size:13px;margin:0 0 12px;}
+  .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:20000;}
+  .gatebox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;width:300px;text-align:center;}
+  .gatebox h2{margin:0 0 6px;} .gatebox p{color:var(--muted);margin:0 0 16px;font-size:14px;}
+  .gatebox input{width:100%;text-align:center;font-size:22px;letter-spacing:.3em;margin-bottom:12px;} .gatebox .btn{width:100%;}
+</style>
+</head>
+<body>
+<div id="gate" class="gate"><div class="gatebox">
+  <h2>Dispatch AVA</h2><p>Code d'accès</p>
+  <input id="gatecode" type="tel" inputmode="numeric" autocomplete="off">
+  <button class="btn primary" id="gatebtn">Entrer</button>
+  <div id="gateerr" class="hint" style="color:var(--danger);margin:10px 0 0"></div>
+</div></div>
+
+<div class="app">
+  <header>
+    <a class="menu-link" href="index.html">← Menu</a>
+    <h1><span class="sync" id="sync"></span>Dispatch</h1>
+    <div class="stats" id="stats"></div>
+  </header>
+  <nav id="tabs"></nav>
+  <div id="view"></div>
+</div>
+<div id="toast"></div>
+<script>
+/* ===================== CONFIG ===================== */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylCwJTEQoOaYQBgn5NXvPrU_A0gGfHbZkfpYTrTeiVOB4xDLEZ4rIft2ovXH7YZseZ/exec';
+let accessPin = null;   // codul de Dispatch vine din ⚙ Admin (acelasi loc cu PIN-urile Chantier/Bureau)
+/* ================================================== */
+
+let state={workers:[],caz:[],sit:[],veh:[]};
+let currentTab='caz', selectedWorkerId=null;
+const $=s=>document.querySelector(s);
+const W=id=>state.workers.find(w=>String(w.id)===String(id));
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1800); }
+function sync(s){ const d=$('#sync'); if(d) d.className='sync '+(s||''); }
+const cazOcc=id=>state.workers.filter(w=>String(w.cazId)===String(id));
+const sitW=id=>state.workers.filter(w=>String(w.sitId)===String(id));
+
+async function loadState(){
+  sync('busy');
+  try{ const r=await fetch(SCRIPT_URL+'?mod=dispecer&action=state'); state=await r.json(); sync('ok'); }
+  catch(e){ sync(''); toast('Pas de connexion.'); }
+  render();
+}
+async function call(payload){
+  payload.tip='dispecer'; sync('busy');
+  try{ await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)}); sync('ok'); }
+  catch(e){ sync(''); toast('Pas de connexion.'); }
+}
+
+function renderStats(){
+  const t=state.workers.length, d=state.workers.filter(w=>w.driver).length,
+        caz=state.workers.filter(w=>w.cazId).length, on=state.workers.filter(w=>w.sitId).length,
+        free=state.workers.filter(w=>!w.cazId&&!w.sitId).length;
+  $('#stats').innerHTML=`
+    <div class="stat"><b class="mono">${t}</b><span>Ouvriers</span></div>
+    <div class="stat driver"><b class="mono">${d}</b><span>Chauffeurs</span></div>
+    <div class="stat ok"><b class="mono">${caz}</b><span>Logés</span></div>
+    <div class="stat work"><b class="mono">${on}</b><span>Sur chantier</span></div>
+    <div class="stat pool"><b class="mono">${free}</b><span>Disponibles</span></div>`;
+}
+const TABS=[['caz','Logements'],['sit','Chantiers'],['veh','Véhicules'],['global','Global'],['manage','Gestion']];
+function renderTabs(){ $('#tabs').innerHTML=TABS.map(([k,l])=>`<button data-tab="${k}" class="${k===currentTab?'active':''}">${l}</button>`).join(''); }
+function chipHTML(w){
+  const sel=String(w.id)===String(selectedWorkerId)?'selected':'';
+  const b=[w.driver?'🚗':'',w.cazId?'🛏':'',w.sitId?'🏗':''].filter(Boolean).join(' ');
+  return `<div class="chip ${w.driver?'driver':''} ${sel}" data-worker="${encodeURIComponent(w.id)}"><span class="nm">${w.name}</span>${b?`<span class="badge">${b}</span>`:''}</div>`;
+}
+function render(){
+  if(SCRIPT_URL.indexOf('PUNE_AICI')>=0){ $('#view').innerHTML='<div class="panel"><h2>Configuration</h2><p class="hint">Mets l’URL <code>/exec</code> du pointage dans <code>SCRIPT_URL</code> en haut du fichier.</p></div>'; return; }
+  renderStats(); renderTabs();
+  const v=$('#view');
+  if(currentTab==='caz') v.innerHTML=viewAssign('caz');
+  else if(currentTab==='sit') v.innerHTML=viewAssign('sit');
+  else if(currentTab==='veh') v.innerHTML=viewVeh();
+  else if(currentTab==='global') v.innerHTML=viewGlobal();
+  else v.innerHTML=viewManage();
+}
+function viewAssign(kind){
+  const field=kind==='caz'?'cazId':'sitId';
+  const items=kind==='caz'?state.caz:state.sit;
+  const lbl=kind==='caz'?'Zone neutre (sans logement)':'Zone neutre (sans chantier)';
+  const neutral=state.workers.filter(w=>!w[field]);
+  const accent=kind==='caz'?'var(--ok)':'var(--work)';
+  const neutralBox=`<div class="zone neutral" data-zone data-kind="${kind}-neutral">
+      <div class="zone-head"><span class="dot" style="background:var(--pool)"></span><span class="name">${lbl}</span><span class="cap mono">${neutral.length}</span></div>
+      <div class="chips">${neutral.map(chipHTML).join('')||'<span class="empty">— vide —</span>'}</div></div>`;
+  const boxes=items.map(it=>{
+    const occ=kind==='caz'?cazOcc(it.id):sitW(it.id);
+    const cap=kind==='caz'?`${occ.length}/${it.cap}`:`${occ.length}`;
+    const full=kind==='caz'&&occ.length>=it.cap?'full':'';
+    return `<div class="zone ${full}" data-zone data-kind="${kind}" data-id="${encodeURIComponent(it.id)}">
+        <div class="zone-head"><span class="dot" style="background:${accent}"></span><span class="name">${it.name}</span><span class="cap mono">${cap}</span></div>
+        <div class="chips">${occ.map(chipHTML).join('')||'<span class="empty">— vide —</span>'}</div></div>`;
+  }).join('');
+  return `<p class="hint">Glissez un ouvrier dans une case — ou touchez l’ouvrier puis la destination.</p>
+    <div class="board">${neutralBox}<div class="grid">${boxes||'<span class="empty">'+(kind==='caz'?'Ajoutez un logement dans « Gestion ».':'Les chantiers viennent du pointage.')+'</span>'}</div></div>`;
+}
+function viewVeh(){
+  const free=state.workers.filter(w=>w.driver&&!w.vehId);
+  const pool=`<div class="zone neutral" data-zone data-kind="veh-neutral">
+      <div class="zone-head"><span class="dot" style="background:var(--driver)"></span><span class="name">Chauffeurs disponibles</span><span class="cap mono">${free.length}</span></div>
+      <div class="chips">${free.map(chipHTML).join('')||'<span class="empty">— aucun chauffeur libre —</span>'}</div></div>`;
+  const cards=state.veh.map(v=>{
+    const drv=state.workers.find(w=>String(w.vehId)===String(v.id));
+    return `<div class="veh"><h3>🚗 ${v.name}</h3><div class="seats mono">${v.seats} places</div>
+        <div class="slot" data-zone data-kind="veh" data-id="${encodeURIComponent(v.id)}">${drv?chipHTML(drv):'<span class="empty">— glissez un chauffeur ici —</span>'}</div></div>`;
+  }).join('');
+  return `<p class="hint">Seuls les chauffeurs peuvent être mis au volant.</p><div class="board">${pool}<div class="grid">${cards||'<span class="empty">Ajoutez un véhicule dans « Gestion ».</span>'}</div></div>`;
+}
+function viewGlobal(){
+  const rows=state.workers.map(w=>{
+    const c=state.caz.find(x=>String(x.id)===String(w.cazId)), s=state.sit.find(x=>String(x.id)===String(w.sitId)), v=state.veh.find(x=>String(x.id)===String(w.vehId));
+    const tag=x=>x?`<span class="tag">${x}</span>`:`<span class="tag none">—</span>`;
+    return `<tr><td>${w.name}</td><td>${w.driver?'<span class="tag" style="border-color:var(--driver);color:var(--driver)">chauffeur</span>':'<span class="tag none">—</span>'}</td><td>${tag(c?.name)}</td><td>${tag(s?.name)}</td><td>${tag(v?.name)}</td></tr>`;
+  }).join('');
+  return `<div class="row" style="margin-bottom:14px"><button class="btn" data-act="export-csv">⤓ Exporter (CSV)</button></div>
+    <p class="hint">Les données sont déjà dans Google Sheets (onglets Cazari / Masini / Alocari).</p>
+    <div class="panel" style="padding:0;overflow:auto"><table><thead><tr><th>Ouvrier</th><th>Rôle</th><th>Logement 🛏</th><th>Chantier 🏗</th><th>Véhicule 🚗</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan=5 class="empty">Aucun ouvrier dans le pointage.</td></tr>'}</tbody></table></div>`;
+}
+function viewManage(){
+  const w=state.workers.map(x=>`<div class="list-item"><span>${x.name}</span>
+      <label class="ck"><input type="checkbox" data-drv="${encodeURIComponent(x.id)}" ${x.driver?'checked':''}> chauffeur</label></div>`).join('');
+  const c=state.caz.map(x=>`<div class="list-item"><span>${x.name} <span class="seats mono">(cap. ${x.cap})</span></span><button class="btn warn x" data-del-c="${encodeURIComponent(x.id)}">Supprimer</button></div>`).join('');
+  const v=state.veh.map(x=>`<div class="list-item"><span>${x.name} <span class="seats mono">(${x.seats} pl.)</span></span><button class="btn warn x" data-del-v="${encodeURIComponent(x.id)}">Supprimer</button></div>`).join('');
+  return `
+  <div class="panel"><h2>Ouvriers</h2><p class="hint">Les ouvriers viennent du pointage. Cochez ici qui est chauffeur.</p>${w||'<p class="hint">Aucun ouvrier.</p>'}</div>
+  <div class="panel"><h2>Chantiers</h2><p class="hint">Les chantiers viennent du pointage (⚙ Admin). Ils apparaissent ici automatiquement.</p>
+    ${state.sit.map(x=>`<div class="list-item"><span>${x.name}</span></div>`).join('')||'<p class="hint">Aucun chantier.</p>'}</div>
+  <div class="panel"><h2>Logements</h2><div class="row"><input type="text" id="nc" placeholder="Nom du logement"><input type="number" id="ncc" min="1" value="4"><button class="btn primary" data-act="add-c">+ Ajouter</button></div>${c||'<p class="hint">Aucun logement.</p>'}</div>
+  <div class="panel"><h2>Véhicules</h2><div class="row"><input type="text" id="nv" placeholder="Nom / plaque"><input type="number" id="nvs" min="1" value="5"><button class="btn primary" data-act="add-v">+ Ajouter</button></div>${v||'<p class="hint">Aucun véhicule.</p>'}</div>`;
+}
+
+async function assignToZone(workerId,kind,id){
+  selectedWorkerId=null; const w=W(workerId); if(!w){return;}
+  if(kind==='caz'){ const c=state.caz.find(x=>String(x.id)===String(id)); const occ=cazOcc(id).filter(x=>String(x.id)!==String(workerId)).length; if(c&&occ>=c.cap){ toast('Logement complet.'); render(); return; } }
+  if(kind==='veh'&&!w.driver){ toast('Seuls les chauffeurs peuvent conduire.'); render(); return; }
+  if(kind==='caz') w.cazId=id; else if(kind==='caz-neutral') w.cazId=null;
+  else if(kind==='sit') w.sitId=id; else if(kind==='sit-neutral') w.sitId=null;
+  else if(kind==='veh'){ state.workers.forEach(x=>{ if(String(x.vehId)===String(id)) x.vehId=null; }); w.vehId=id; }
+  else if(kind==='veh-neutral') w.vehId=null;
+  render();
+  call({action:'assign',worker:workerId,kind:kind,id:id});
+}
+
+/* drag (souris + tactile) */
+let drag=null;
+$('#view').addEventListener('pointerdown',e=>{ const c=e.target.closest('.chip'); if(!c)return; e.preventDefault(); drag={id:decodeURIComponent(c.dataset.worker),x0:e.clientX,y0:e.clientY,started:false,el:c,ghost:null}; });
+window.addEventListener('pointermove',e=>{
+  if(!drag)return; if(!drag.started&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<7)return;
+  if(!drag.started){ drag.started=true; drag.el.classList.add('dragging'); const g=drag.el.cloneNode(true); g.classList.add('chip-ghost'); g.classList.remove('dragging'); document.body.appendChild(g); drag.ghost=g; }
+  drag.ghost.style.left=e.clientX+'px'; drag.ghost.style.top=e.clientY+'px';
+  document.querySelectorAll('.drophover').forEach(z=>z.classList.remove('drophover'));
+  const z=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-zone]'); if(z)z.classList.add('drophover');
+});
+window.addEventListener('pointerup',e=>{
+  if(!drag)return;
+  if(drag.started){ const z=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-zone]'); if(drag.ghost)drag.ghost.remove(); drag.el.classList.remove('dragging'); if(z)assignToZone(drag.id,z.dataset.kind,z.dataset.id?decodeURIComponent(z.dataset.id):null); }
+  else{ selectedWorkerId=(String(selectedWorkerId)===String(drag.id))?null:drag.id; render(); }
+  drag=null;
+});
+
+/* clicks */
+$('#tabs').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b){ currentTab=b.dataset.tab; selectedWorkerId=null; render(); }});
+$('#view').addEventListener('click',async e=>{
+  const zone=e.target.closest('[data-zone]');
+  if(selectedWorkerId&&zone&&!e.target.closest('.chip')){ assignToZone(selectedWorkerId,zone.dataset.kind,zone.dataset.id?decodeURIComponent(zone.dataset.id):null); return; }
+  const a=e.target.closest('[data-act]')?.dataset.act; if(a){ handleAction(a); return; }
+  const dc=e.target.closest('[data-del-c]'); if(dc){ await call({action:'del',entity:'caz',id:decodeURIComponent(dc.dataset.delC)}); loadState(); return; }
+  const dv=e.target.closest('[data-del-v]'); if(dv){ await call({action:'del',entity:'veh',id:decodeURIComponent(dv.dataset.delV)}); loadState(); return; }
+});
+$('#view').addEventListener('change',async e=>{
+  const dr=e.target.closest('[data-drv]'); if(dr){ const id=decodeURIComponent(dr.dataset.drv); const w=W(id); w.driver=e.target.checked; if(!w.driver) w.vehId=null; render(); call({action:'driver',worker:id,value:e.target.checked}); }
+});
+async function handleAction(a){
+  if(a==='add-c'){ const n=$('#nc').value.trim(); if(!n)return toast('Donnez un nom.'); await call({action:'add',entity:'caz',name:n,cap:parseInt($('#ncc').value)||4}); loadState(); }
+  else if(a==='add-v'){ const n=$('#nv').value.trim(); if(!n)return toast('Donnez un nom.'); await call({action:'add',entity:'veh',name:n,seats:parseInt($('#nvs').value)||5}); loadState(); }
+  else if(a==='export-csv') exportCSV();
+}
+function exportCSV(){
+  const head=['Ouvrier','Chauffeur','Logement','Chantier','Vehicule'];
+  const lines=[head.join(',')].concat(state.workers.map(w=>{
+    const c=state.caz.find(x=>String(x.id)===String(w.cazId))?.name||'', s=state.sit.find(x=>String(x.id)===String(w.sitId))?.name||'', v=state.veh.find(x=>String(x.id)===String(w.vehId))?.name||'';
+    return [w.name,w.driver?'OUI':'',c,s,v].map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',');
+  }));
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv'})); a.download='dispatch.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* code d'accès (vine din Admin / Config) */
+async function loadPin(){ try{ const r=await fetch(SCRIPT_URL); const d=await r.json(); accessPin=String(d.pinDispatch||'0000'); }catch(e){ accessPin=null; } }
+async function entrer(){
+  if(accessPin===null) await loadPin();
+  if(accessPin!==null && $('#gatecode').value.trim()===accessPin){ $('#gate').style.display='none'; loadState(); }
+  else { $('#gateerr').textContent = (accessPin===null) ? 'Pas de connexion. Réessayez.' : 'Code incorrect.'; $('#gatecode').value=''; }
+}
+$('#gatebtn').addEventListener('click',entrer);
+$('#gatecode').addEventListener('keydown',e=>{ if(e.key==='Enter') entrer(); });
+loadPin();
+render();
+</script>
+</body>
+</html>
