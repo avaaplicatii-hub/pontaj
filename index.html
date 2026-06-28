@@ -69,6 +69,7 @@
   .choice-btn.chantier .c-ico { background:linear-gradient(135deg,var(--accent),var(--accent2)); }
   .choice-btn.bureau .c-ico { background:linear-gradient(135deg,var(--bureau),#8e5ad6); }
   .choice-btn.recus .c-ico { background:linear-gradient(135deg,#1976d2,#1565c0); }
+  .choice-btn.dispatch .c-ico { background:linear-gradient(135deg,#36c4b0,#1f8f80); }
   .choice-btn .c-txt h3 { font-size:18px; font-weight:700; color:var(--text); }
   .choice-btn .c-txt p { font-size:13px; color:var(--muted); margin-top:2px; }
 
@@ -159,6 +160,10 @@
     <button class="choice-btn recus" onclick="window.location.href='bonuri.html'">
       <div class="c-ico">🧾</div>
       <div class="c-txt"><h3>Reçus / Factures</h3><p>Photo → l'IA extrait → Sheets</p></div>
+    </button>
+    <button class="choice-btn dispatch" onclick="window.location.href='dispecer.html'">
+      <div class="c-ico">🛏️</div>
+      <div class="c-txt"><h3>Dispatch / Logements</h3><p>Logements, chantiers, véhicules</p></div>
     </button>
     <div class="admin-trigger"><button class="btn-ghost" onclick="go('adminLogin')">⚙ Admin</button></div>
   </div>
@@ -271,6 +276,8 @@
       <input type="text" id="adminPinChantier" placeholder="ex: 1234">
       <div class="section-title b" style="margin-top:16px">🔑 Code d'accès — Bureau</div>
       <input type="text" id="adminPinBureau" placeholder="ex: 5678">
+      <div class="section-title" style="margin-top:16px;color:var(--accent2)">🔑 Code d'accès — Dispatch</div>
+      <input type="text" id="adminPinDispatch" placeholder="ex: 0000">
       <div class="hint">Ces codes sont demandés à l'entrée de chaque espace. Modifiez-les quand vous voulez puis « Enregistrer ».</div>
       <div style="margin-top:20px"><button class="btn-warning" onclick="saveAdmin()">💾 Enregistrer les modifications</button><div class="success-inline" id="saveOk">✅ Enregistré ! Modifications actives pour tous.</div></div>
     </div>
@@ -305,7 +312,7 @@
   const METEO_CHANTIER = { lat:49.5731, lon:6.1731, name:"Hesperange, LU", tz:"Europe/Berlin" };
   const METEO_BUREAU   = { lat:3.848,   lon:11.502, name:"Yaoundé, CM",    tz:"Africa/Douala" };
 
-  let config = { ouvriers:[], chantiers:[], employes:[], projets:[], pinChantier:"1234", pinBureau:"5678" };
+  let config = { ouvriers:[], chantiers:[], employes:[], projets:[], pinChantier:"1234", pinBureau:"5678", pinDispatch:"0000" };
   let s1="", s2="", ouvriersSel=[];
   let employeSel="", p1B="", p2B="";
   let oreSantiere={};
@@ -341,11 +348,12 @@
       config.ouvriers=d.ouvriers||[]; config.chantiers=d.chantiers||[];
       config.employes=d.employes||[]; config.projets=d.projets||[];
       config.pinChantier=String(d.pinChantier||"1234"); config.pinBureau=String(d.pinBureau||"5678");
+      config.pinDispatch=String(d.pinDispatch||"0000");
     }catch(e){
       config.ouvriers=["Bargauan Ion","Soare Aurel","Gotcu Tudor","Marin Iulian"];
       config.chantiers=["EBI","PWC","ALLOUIS","CSS","BUZZ CITY","LABORATOR","FM GLOBAL","SKY PARK"];
       config.employes=["Employé 1","Employé 2"]; config.projets=["Projet 1","Projet 2"];
-      config.pinChantier="1234"; config.pinBureau="5678";
+      config.pinChantier="1234"; config.pinBureau="5678"; config.pinDispatch="0000";
     }
     init();
     go("choiceScreen");
@@ -354,7 +362,7 @@
   function go(id){
     document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
-    if(id==="adminPanel"){ renderAdminTags(); document.getElementById("adminPinChantier").value=config.pinChantier; document.getElementById("adminPinBureau").value=config.pinBureau; }
+    if(id==="adminPanel"){ renderAdminTags(); document.getElementById("adminPinChantier").value=config.pinChantier; document.getElementById("adminPinBureau").value=config.pinBureau; document.getElementById("adminPinDispatch").value=config.pinDispatch; }
   }
 
   function chooseBranch(b){
@@ -564,9 +572,10 @@
     const btn=document.querySelector(".btn-warning"); btn.disabled=true; btn.textContent="Enregistrement...";
     const pc=(document.getElementById("adminPinChantier").value||"").trim()||config.pinChantier;
     const pb=(document.getElementById("adminPinBureau").value||"").trim()||config.pinBureau;
+    const pd=(document.getElementById("adminPinDispatch").value||"").trim()||config.pinDispatch;
     try{
-      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"config",ouvriers:config.ouvriers,chantiers:config.chantiers,employes:config.employes,projets:config.projets,pinChantier:pc,pinBureau:pb})});
-      config.pinChantier=pc; config.pinBureau=pb;
+      await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({tip:"config",ouvriers:config.ouvriers,chantiers:config.chantiers,employes:config.employes,projets:config.projets,pinChantier:pc,pinBureau:pb,pinDispatch:pd})});
+      config.pinChantier=pc; config.pinBureau=pb; config.pinDispatch=pd;
       const el=document.getElementById("saveOk"); el.style.display="block"; setTimeout(()=>el.style.display="none",4000);
       init();
     }catch(e){ alert("Erreur d'enregistrement !"); }
